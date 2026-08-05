@@ -1,0 +1,156 @@
+{
+  "theme": "light",
+  "project_context": {
+    "company": "SKL ENTERPRISES",
+    "founder": "E.L. Ashok Anand",
+    "vision": "Technology-Driven Public Service Solutions",
+    "core_values": ["Quality", "Trust", "Commitment"],
+    "archetype": "The Old Money Tech & Swiss High-Contrast (Authority, Clarity, Truth)"
+  },
+  "typography": {
+    "primary_heading_font": "Outfit",
+    "secondary_body_font": "IBM Plex Sans",
+    "rules": {
+      "headings": "tracking-tight, never center-aligned by default. Use font-light for elegance or font-bold for impact, avoiding generic 'regular'.",
+      "body": "leading-relaxed, highly readable. Use IBM Plex Sans to give a technical, precise public-service feel.",
+      "overline_labels": "uppercase, tracking-[0.2em], text-xs or text-sm for section tags (e.g., 'FEATURED PROJECTS')."
+    },
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-slate-900",
+      "h3": "text-xl sm:text-2xl font-medium text-slate-800",
+      "body": "text-base sm:text-lg text-slate-600"
+    },
+    "forbidden_fonts": ["Inter (for headings)", "Open Sans", "Roboto", "Space Grotesk"]
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "DEFAULT": "#0033A0",
+        "foreground": "#FFFFFF",
+        "light": "#1A49B8",
+        "dark": "#002277"
+      },
+      "secondary": {
+        "DEFAULT": "#FFFFFF",
+        "foreground": "#0F172A"
+      },
+      "accent": {
+        "DEFAULT": "#C5A059",
+        "foreground": "#FFFFFF",
+        "light": "#D4AF37",
+        "dark": "#A68648"
+      },
+      "background": "#F8FAFC",
+      "surface": "#FFFFFF",
+      "border": "#E2E8F0",
+      "muted": "#F1F5F9",
+      "text_main": "#0F172A",
+      "text_muted": "#475569"
+    },
+    "rules": {
+      "contrast": "Ensure pure Royal Blue background has pure white text. Gold accent should be used sparingly for trust badges, primary CTAs, or active states.",
+      "forbidden_colors": ["#7351B7", "#1B93A4", "Generic flat gradients"],
+      "backgrounds": "Use solid cool-tinted grays (slate-50) for alternate sections to break up pure white, not generic Vercel-like dotted backgrounds."
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": "For sticky nav: bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shadow-sm.",
+    "borders": "Expose the skeleton for feature grids using border-collapse style (Grid Borders). Use 1px subtle borders (border-slate-200) for cards.",
+    "shadows": "Minimalist. Use soft ambient shadows (shadow-[0_8px_30px_rgb(0,0,0,0.04)]) for marketing cards. Dashboard should be mostly flat with 1px borders."
+  },
+  "grids_and_layouts": {
+    "marketing_pages": {
+      "mode": "The 'Bento' Grid Protocol (Mode A)",
+      "spacing": "Generous spacing. Use py-24 or py-32 for sections. Container internal padding must be p-6 or p-8 minimum.",
+      "structure": "Asymmetrical layouts for Home & Projects to avoid typical Bootstrap corporate templates. Mix 2-col and 3-col grids with varying row spans."
+    },
+    "admin_dashboard": {
+      "mode": "High Density Grid (Mode B)",
+      "spacing": "Tight spacing (gap-4, p-4 or p-6).",
+      "structure": "Grid layouts for CRM stats. Every pixel utilized. Rectangular, dense styles. Avoid overuse of the generic Shadcn Card if it feels too fluffy."
+    }
+  },
+  "components_customization": {
+    "buttons": "Sharp or very subtle rounding (rounded-sm or rounded-none). Primary CTAs should be Royal Blue with hover state bg-[#002277] text-white. Secondary CTAs outline with slate.",
+    "forms": "High-contrast inputs. focus:ring-2 focus:ring-[#0033A0] focus:border-transparent. No default HTML inputs.",
+    "navigation": "Crystal glassmorphism sticky header. Logo left, links center, CTA right. Links MUST be visible on desktop (no hamburger).",
+    "tables": "Shadcn Table for Admin Dashboard. Striped rows or clean 1px borders. Add status badges with subtle tint backgrounds (e.g., bg-green-50 text-green-700).",
+    "accordion": "For FAQ on project pages. Minimal lines, plus/minus icons, Royal Blue active state."
+  },
+  "motion": {
+    "hover_states": "translate-y-[-2px] transition-transform duration-200 ease-out. Always define hover text colors.",
+    "page_transitions": "Subtle fade-in and slide-up (framer-motion) for main section elements on scroll (staggered children).",
+    "rules": "Respect prefers-reduced-motion. Avoid 'transition: all'."
+  },
+  "accessibility": {
+    "contrast": "APCA/WCAG AA minimums. Text on Gold background requires dark text (text-slate-900). Text on Royal Blue requires white.",
+    "focus": "Clear focus rings on all interactive elements.",
+    "testing": "MANDATORY data-testid attributes on all buttons, forms, links, and inputs."
+  },
+  "image_urls": {
+    "hero_and_corporate": [
+      {
+        "url": "https://images.unsplash.com/photo-1560264280-88b68371db39?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwzfHxpbmRpYW4lMjBjb3Jwb3JhdGUlMjBwcm9mZXNzaW9uYWxzJTIwbW9kZXJuJTIwb2ZmaWNlfGVufDB8fHx8MTc4NTk0MDQwNXww&ixlib=rb-4.1.0&q=85",
+        "description": "Indian professionals working in a premium modern open office",
+        "category": "hero_background_or_about_us"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1531973576160-7125cd663d86?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBjb3Jwb3JhdGUlMjBwcm9mZXNzaW9uYWxzJTIwbW9kZXJuJTIwb2ZmaWNlfGVufDB8fHx8MTc4NTk0MDQwNXww&ixlib=rb-4.1.0&q=85",
+        "description": "Three people collaborating, representing leadership and trust",
+        "category": "leadership_preview"
+      }
+    ],
+    "projects_apaar": [
+      {
+        "url": "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwyfHxkaWdpdGFsJTIwZWR1Y2F0aW9uJTIwY2xhc3Nyb29tJTIwdGVjaHxlbnwwfHx8fDE3ODU5NDA0MDV8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Digital education/classroom tech representation",
+        "category": "project_apaar_hero"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1509062522246-3755977927d7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwxfHxkaWdpdGFsJTIwZWR1Y2F0aW9uJTIwY2xhc3Nyb29tJTIwdGVjaHxlbnwwfHx8fDE3ODU5NDA0MDV8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Students in modern tech-enabled classroom",
+        "category": "project_apaar_content"
+      }
+    ],
+    "projects_pan2": [
+      {
+        "url": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NjV8MHwxfHNlYXJjaHwyfHxkaWdpdGFsJTIwaWRlbnRpdHklMjB0ZWNobm9sb2d5fGVufDB8fHx8MTc4Mzk1NTY1NXww&ixlib=rb-4.1.0&q=85",
+        "description": "Abstract tech/identity verification circuit background",
+        "category": "project_pan2_hero"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1558685555-bcdb675f9b9a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NjV8MHwxfHNlYXJjaHw0fHxkaWdpdGFsJTIwaWRlbnRpdHklMjB0ZWNobm9sb2d5fGVufDB8fHx8MTc4Mzk1NTY1NXww&ixlib=rb-4.1.0&q=85",
+        "description": "Digital infrastructure and computerized tech",
+        "category": "project_pan2_content"
+      }
+    ]
+  },
+  "libraries_and_packages": [
+    "lucide-react (for default icons)",
+    "@phosphor-icons/react (MANDATORY: install for premium corporate duotone/light icons)",
+    "framer-motion (for page transitions, staggering, and scroll effects)",
+    "sonner (for form submission and admin dashboard toasts)"
+  ],
+  "instructions_to_main_agent": [
+    "Install missing dependencies: `yarn add @phosphor-icons/react framer-motion`.",
+    "Implement the 'Outfit' font for headings and 'IBM Plex Sans' for body text via Google Fonts in index.html or CSS imports.",
+    "Set up Tailwind config with the specified Royal Blue (#0033A0) and Gold (#C5A059) colors.",
+    "Build a clear, robust routing structure for all required pages (Home, About, Projects/APAAR, Projects/PAN2, Join, Careers, Contact, Admin Dashboard).",
+    "Hero section must use the provided modern office image with a dark/blue gradient overlay (e.g. bg-gradient-to-r from-[#0033A0]/90 to-transparent) to ensure text contrast while retaining premium feel.",
+    "Do NOT use standard rounded-xl cards everywhere. SKL is a serious enterprise. Use sharp edges or minimal rounded-sm to maintain authority.",
+    "Admin dashboard must be a distinct layout (sidebar + topbar) showing CRM tables (leads, agents, careers) with search/filter/export functionality. Make it look like a high-end enterprise internal tool, NOT a marketing page.",
+    "Every form (Contact, Agent Registration, Careers) must be robustly built with Shadcn form components, clear validation states, and sonner toasts on success.",
+    "Use data-testid attributes extensively as mandated."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. Avoid the 'AI slop' aesthetic. Make it look like Deloitte or Infosys built it for $500k.",
+    "Create depth through layered design elements with z-index hierarchy, not just flat dropshadows.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur) for sticky navigational elements.",
+    "You MUST NOT apply universal transition (e.g., transition: all). Add specific transitions.",
+    "You MUST NOT center align the app container. Do not add `.App { text-align: center; }` in CSS.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Missing categories = main agent will use placeholder text which is FORBIDDEN. Only use the provided Unsplash URLs.",
+    "Prioritize using pre-existing components from src/components/ui. Do not rewrite Shadcn components from scratch."
+  ]
+}
