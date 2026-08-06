@@ -17,6 +17,7 @@ import jwt
 import bcrypt
 import httpx
 import requests
+from openpyxl import Workbook
 from bson import ObjectId
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends, UploadFile, File, Form, Query, Header
 from fastapi.responses import StreamingResponse
@@ -404,7 +405,6 @@ async def export_leads(collection: str, format: str = Query("csv"), user: dict =
         return {k: (v if not isinstance(v, list) else "; ".join(str(x.get("text", x)) if isinstance(x, dict) else str(x) for x in v)) for k, v in d.items()}
 
     if format == "xlsx":
-        from openpyxl import Workbook
         wb = Workbook()
         ws = wb.active
         ws.title = collection.capitalize()

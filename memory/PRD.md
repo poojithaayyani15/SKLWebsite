@@ -28,5 +28,24 @@ poojithaayyani1592@gmail.com / SklAdmin@2026 (see /app/memory/test_credentials.m
 - P2: Loading splash screen with logo.
 - P1: Replace editable placeholder statistics with real company figures when available.
 
-## Notes
-- Statistics on Home are editable placeholders (no invented achievements/certifications per instructions).
+## Phase 1 Refinements (2026-06)
+- Official APAAR & PAN 2.0 images used site-wide (Home featured, Projects, detail pages, banners).
+- APAAR promotional video embedded (autoplay/muted/loop); PAN 2.0 elegant video placeholder (swap-in ready).
+- Project-specific agent forms: Position dropdowns (APAAR: State/District/Field; PAN2: District/Pincode), cascading State→District selectors (locations.js), PAN2 state locked to Tamil Nadu.
+- Form success confirmation screens (contact/career/agent).
+- Admin Excel (.xlsx) + CSV export (openpyxl).
+- SEO per-page titles/meta/OG/canonical (SEO.jsx), sitemap.xml, robots.txt.
+- Enhanced project pages: professional hero banner, process timeline, benefit cards, image gallery, related downloads (placeholders), breadcrumbs.
+- Site-wide: floating WhatsApp button, scroll-to-top, logo loading screen.
+- Content centralized in /src/data/content.js & locations.js (Phase 2 will migrate to DB-backed CMS).
+
+## Phase 2 Backlog (CMS — next iteration)
+- DB-backed editable content (home/about/founder/services/FAQ/contact/footer/nav/hero/stats/announcements).
+- Media Library (images/videos/PDFs, folders, replace/delete).
+- Dynamic Projects CRUD, Careers job management, Downloads manager, Website Settings, SEO settings.
+- Admin Users + roles (Super Admin/Admin/Content Manager/HR/Operations), password reset, user management.
+- Activity Log (login/logout/submissions/status changes/content & media updates with date/time/user/IP).
+
+## Original backlog (still open)
+- EmailStr validation on careers endpoint (P2).
+- Real statistics to replace placeholders (P1, awaiting data).
