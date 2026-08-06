@@ -28,10 +28,10 @@ export const IMAGES = {
   leadership: "https://images.unsplash.com/photo-1531973576160-7125cd663d86?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200",
   officeTeam: "https://images.pexels.com/photos/7580644/pexels-photo-7580644.jpeg?auto=compress&cs=tinysrgb&w=1200",
   careers: "https://images.pexels.com/photos/7581016/pexels-photo-7581016.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  apaarHero: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?crop=entropy&cs=srgb&fm=jpg&q=85&w=1600",
-  apaarContent: "https://images.unsplash.com/photo-1509062522246-3755977927d7?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200",
-  panHero: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?crop=entropy&cs=srgb&fm=jpg&q=85&w=1600",
-  panContent: "https://images.unsplash.com/photo-1558685555-bcdb675f9b9a?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200",
+  apaarHero: "/apaar.png",
+  apaarContent: "/apaar.png",
+  panHero: "/pan2.png",
+  panContent: "/pan2.png",
 };
 
 export const STATS = [
@@ -82,9 +82,17 @@ export const PROJECTS = {
     full: "Automated Permanent Academic Account Registry",
     tagline: "One Nation, One Student ID — for a lifelong academic identity.",
     coverage: "South India",
+    coverageStates: ["Tamil Nadu", "Kerala", "Karnataka", "Andhra Pradesh", "Telangana", "Puducherry"],
+    positions: ["State Coordinator", "District Coordinator", "Field Agent"],
     recruiting: ["State Coordinators", "District Coordinators", "Field Agents"],
-    hero: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?crop=entropy&cs=srgb&fm=jpg&q=85&w=1600",
-    content: "https://images.unsplash.com/photo-1509062522246-3755977927d7?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200",
+    hero: "/apaar.png",
+    content: "/apaar.png",
+    video: "/apaar-video.mp4",
+    gallery: ["/apaar.png"],
+    downloads: [
+      { label: "APAAR Programme Overview", type: "PDF" },
+      { label: "APAAR Agent Brochure", type: "PDF" },
+    ],
     overview:
       "APAAR is a nationwide student identification initiative that provides every learner with a unique, permanent academic ID. SKL Enterprises facilitates awareness, enrolment support and last-mile service delivery for students and institutions, helping digitise and unify academic records across a student's lifetime.",
     objectives: [
@@ -137,9 +145,18 @@ export const PROJECTS = {
     full: "PAN 2.0 — QR-Enabled Digital PAN",
     tagline: "A smarter, secure and QR-enabled Permanent Account Number for every citizen.",
     coverage: "Tamil Nadu",
-    recruiting: ["Pincode Level Agents"],
-    hero: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?crop=entropy&cs=srgb&fm=jpg&q=85&w=1600",
-    content: "https://images.unsplash.com/photo-1558685555-bcdb675f9b9a?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200",
+    coverageStates: ["Tamil Nadu"],
+    fixedState: "Tamil Nadu",
+    positions: ["District Coordinator", "Pincode Level Agent"],
+    recruiting: ["District Coordinators", "Pincode Level Agents"],
+    hero: "/pan2.png",
+    content: "/pan2.png",
+    video: null,
+    gallery: ["/pan2.png"],
+    downloads: [
+      { label: "PAN 2.0 Programme Overview", type: "PDF" },
+      { label: "PAN 2.0 Agent Brochure", type: "PDF" },
+    ],
     overview:
       "PAN 2.0 is the next-generation, technology-driven upgrade of the Permanent Account Number system, featuring a secure QR-enabled PAN and a unified digital experience. SKL Enterprises supports citizens with awareness, application facilitation and last-mile service delivery across Tamil Nadu.",
     objectives: [

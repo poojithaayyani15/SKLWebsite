@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import SEO from "@/components/SEO";
 import {
   ArrowRight, Users, ShieldCheck, Network, Server, Gauge, Headset,
   CheckCircle2, Quote, GraduationCap, CreditCard,
@@ -14,6 +15,7 @@ const ICONS = { Users, ShieldCheck, Network, Server, Gauge, Headset };
 export default function Home() {
   return (
     <div data-testid="home-page">
+      <SEO title="Technology-Driven Public Service Solutions" description="SKL Enterprises empowers digital citizen services across India through innovation, technology, operational excellence and trusted execution. Explore APAAR & PAN 2.0." path="/" />
       {/* HERO */}
       <section className="relative min-h-screen flex items-center" data-testid="hero-section">
         <div className="absolute inset-0">

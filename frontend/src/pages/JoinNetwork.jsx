@@ -1,10 +1,12 @@
 import { Network, Users, Award } from "lucide-react";
+import SEO from "@/components/SEO";
 import { Reveal, Overline } from "@/components/Reveal";
 import AgentForm from "@/components/AgentForm";
 
 export default function JoinNetwork() {
   return (
     <div data-testid="join-page">
+      <SEO title="Join Our Network — Become an Agent" description="Become an SKL Enterprises agent and deliver essential digital citizen services across South India. Register as a coordinator or field agent." path="/join" />
       <section className="relative pt-36 pb-20 bg-royal-dark overflow-hidden">
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 80% 20%, #C5A059 0, transparent 45%)" }} />
         <div className="relative max-w-7xl mx-auto px-6 lg:px-8">

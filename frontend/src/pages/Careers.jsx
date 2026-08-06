@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Upload, Briefcase, FileText } from "lucide-react";
+import { Loader2, Upload, Briefcase, FileText, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Reveal, Overline } from "@/components/Reveal";
+import SEO from "@/components/SEO";
 import api, { formatApiError } from "@/lib/api";
 import { IMAGES } from "@/data/content";
 
@@ -20,6 +21,7 @@ export default function Careers() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", position: "", experience: "", message: "" });
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   const field = "h-11 rounded-sm border-slate-300 focus:ring-2 focus:ring-royal focus:border-transparent";
 
@@ -33,6 +35,7 @@ export default function Careers() {
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       fd.append("resume", resume);
       await api.post("/careers", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      setDone(true);
       toast.success("Application submitted! Check your email for confirmation.");
       setForm({ name: "", email: "", phone: "", position: "", experience: "", message: "" });
       setResume(null);
@@ -43,6 +46,7 @@ export default function Careers() {
 
   return (
     <div data-testid="careers-page">
+      <SEO title="Careers" description="Grow your career with purpose at SKL Enterprises. Explore openings and apply with your resume to help build India's digital public-service future." path="/careers" />
       <section className="relative pt-36 pb-20 min-h-[55vh] flex items-end">
         <div className="absolute inset-0"><img src={IMAGES.careers} alt="Careers at SKL" className="w-full h-full object-cover" /><div className="absolute inset-0 hero-overlay" /></div>
         <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
@@ -82,6 +86,14 @@ export default function Careers() {
           <Reveal>
             <Overline>Apply Now</Overline>
             <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-slate-900 mb-8">Submit your application</h2>
+            {done ? (
+              <div className="bg-white border border-slate-200 rounded-sm p-10 card-shadow text-center" data-testid="career-success">
+                <div className="h-16 w-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto"><CheckCircle2 className="h-9 w-9 text-emerald-600" /></div>
+                <h3 className="mt-5 font-heading text-2xl font-semibold text-slate-900">Application Received!</h3>
+                <p className="mt-3 text-slate-600 max-w-sm mx-auto">Thank you for applying. Our talent team will review your profile and reach out if there is a suitable match. A confirmation has been sent to your email.</p>
+                <Button onClick={() => setDone(false)} className="mt-6 bg-royal hover:bg-royal-dark text-white rounded-sm" data-testid="career-another">Submit Another Application</Button>
+              </div>
+            ) : (
             <form onSubmit={submit} className="bg-white border border-slate-200 rounded-sm p-8 lg:p-10 card-shadow space-y-5" data-testid="career-form">
               <div className="grid sm:grid-cols-2 gap-5">
                 <div><Label className="mb-2 block">Full Name *</Label><Input data-testid="career-name" className={field} value={form.name} onChange={set("name")} /></div>
@@ -105,6 +117,7 @@ export default function Careers() {
                 {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Submitting…</> : "Submit Application"}
               </Button>
             </form>
+            )}
           </Reveal>
         </div>
       </section>

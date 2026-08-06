@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2, MapPin, Phone, Mail, MessageCircle, Clock } from "lucide-react";
+import { Loader2, MapPin, Phone, Mail, MessageCircle, Clock, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Reveal, Overline } from "@/components/Reveal";
+import SEO from "@/components/SEO";
 import api, { formatApiError } from "@/lib/api";
 import { COMPANY } from "@/data/content";
 
 export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   const field = "h-11 rounded-sm border-slate-300 focus:ring-2 focus:ring-royal focus:border-transparent";
 
@@ -21,6 +23,7 @@ export default function Contact() {
     setLoading(true);
     try {
       await api.post("/contact", form);
+      setDone(true);
       toast.success("Message sent! Check your email for confirmation.");
       setForm({ name: "", email: "", phone: "", subject: "", message: "" });
     } catch (err) {
@@ -37,6 +40,7 @@ export default function Contact() {
 
   return (
     <div data-testid="contact-page">
+      <SEO title="Contact Us" description="Contact SKL Enterprises — office in Guindy, Chennai. Call, WhatsApp or email us for enquiries, partnerships and investor relations." path="/contact" />
       <section className="relative pt-36 pb-20 bg-royal-dark overflow-hidden">
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 80% 20%, #C5A059 0, transparent 45%)" }} />
         <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
@@ -66,6 +70,15 @@ export default function Contact() {
           <Reveal>
             <div className="bg-white border border-slate-200 rounded-sm p-8 lg:p-10 card-shadow h-full">
               <h2 className="font-heading text-2xl font-semibold text-slate-900 mb-6">Send us a message</h2>
+              <h2 className="font-heading text-2xl font-semibold text-slate-900 mb-6">Send us a message</h2>
+              {done ? (
+                <div className="text-center py-10" data-testid="contact-success">
+                  <div className="h-16 w-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto"><CheckCircle2 className="h-9 w-9 text-emerald-600" /></div>
+                  <h3 className="mt-5 font-heading text-2xl font-semibold text-slate-900">Message Sent!</h3>
+                  <p className="mt-3 text-slate-600 max-w-sm mx-auto">Thank you for reaching out. Our team will respond within one business day. A confirmation has been sent to your email.</p>
+                  <Button onClick={() => setDone(false)} className="mt-6 bg-royal hover:bg-royal-dark text-white rounded-sm" data-testid="contact-another">Send Another Message</Button>
+                </div>
+              ) : (
               <form onSubmit={submit} className="space-y-5" data-testid="contact-form">
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div><Label className="mb-2 block">Full Name *</Label><Input data-testid="contact-name" className={field} value={form.name} onChange={set("name")} /></div>
@@ -78,6 +91,7 @@ export default function Contact() {
                   {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending…</> : "Send Message"}
                 </Button>
               </form>
+              )}
             </div>
           </Reveal>
 

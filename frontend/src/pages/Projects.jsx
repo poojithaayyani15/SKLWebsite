@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, GraduationCap, CreditCard, MapPin } from "lucide-react";
+import SEO from "@/components/SEO";
 import { Reveal, Overline } from "@/components/Reveal";
 import { PROJECTS } from "@/data/content";
 
@@ -20,6 +21,7 @@ export default function Projects() {
   const list = [PROJECTS.apaar, PROJECTS["pan-2"]];
   return (
     <div data-testid="projects-page">
+      <SEO title="Our Projects — APAAR & PAN 2.0" description="SKL Enterprises facilitates flagship national initiatives — APAAR (student academic identity) and PAN 2.0 (QR-enabled digital PAN) — expanding citizen access to digital services." path="/projects" />
       <PageHero
         label="Our Projects"
         title="Technology-enabled public service projects"

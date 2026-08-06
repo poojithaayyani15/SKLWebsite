@@ -1,4 +1,5 @@
 import { Quote } from "lucide-react";
+import SEO from "@/components/SEO";
 import { Reveal, Overline } from "@/components/Reveal";
 import { COMPANY, IMAGES, FOUNDER } from "@/data/content";
 
@@ -18,6 +19,7 @@ function PageHero({ label, title, subtitle }) {
 export default function About() {
   return (
     <div data-testid="about-page">
+      <SEO title="About Us" description="SKL Enterprises is a technology-driven public-service enterprise committed to Quality, Trust and Commitment. Meet our founder E.L. Ashok Anand." path="/about" />
       <PageHero
         label="About Us"
         title="Empowering digital citizen services across India"

@@ -392,20 +392,37 @@ async def add_note(collection: str, item_id: str, body: NoteUpdate, user: dict =
 
 
 @api_router.get("/admin/{collection}/export")
-async def export_leads(collection: str, user: dict = Depends(get_current_user)):
+async def export_leads(collection: str, format: str = Query("csv"), user: dict = Depends(get_current_user)):
     if collection not in COLLECTIONS:
         raise HTTPException(status_code=404, detail="Unknown collection")
     docs = await COLLECTIONS[collection].find({}).sort("created_at", -1).to_list(5000)
-    if not docs:
-        docs = [{}]
     fields = ["created_at", "name", "email", "phone", "mobile", "subject", "message",
               "state", "district", "city", "pincode", "occupation", "experience",
               "project", "role", "position", "resume_filename", "status"]
+
+    def flatten(d):
+        return {k: (v if not isinstance(v, list) else "; ".join(str(x.get("text", x)) if isinstance(x, dict) else str(x) for x in v)) for k, v in d.items()}
+
+    if format == "xlsx":
+        from openpyxl import Workbook
+        wb = Workbook()
+        ws = wb.active
+        ws.title = collection.capitalize()
+        ws.append([f.replace("_", " ").title() for f in fields])
+        for d in docs:
+            row = flatten(d)
+            ws.append([str(row.get(k, "")) for k in fields])
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        return StreamingResponse(buf, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                 headers={"Content-Disposition": f"attachment; filename={collection}_export.xlsx"})
+
     output = io.StringIO()
     writer = csv.DictWriter(output, fieldnames=fields, extrasaction="ignore")
     writer.writeheader()
     for d in docs:
-        row = {k: (v if not isinstance(v, list) else "; ".join(str(x.get("text", x)) if isinstance(x, dict) else str(x) for x in v)) for k, v in d.items()}
+        row = flatten(d)
         writer.writerow({k: row.get(k, "") for k in fields})
     output.seek(0)
     return StreamingResponse(io.BytesIO(output.getvalue().encode()), media_type="text/csv",

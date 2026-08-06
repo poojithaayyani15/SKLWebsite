@@ -89,14 +89,14 @@ export default function AdminDashboard() {
     } catch { toast.error("Failed to add note"); }
   };
 
-  const exportCsv = async () => {
+  const exportFile = async (fmt) => {
     try {
-      const res = await api.get(`/admin/${tab}/export`, { responseType: "blob" });
+      const res = await api.get(`/admin/${tab}/export`, { params: { format: fmt }, responseType: "blob" });
       const url = URL.createObjectURL(res.data);
       const a = document.createElement("a");
-      a.href = url; a.download = `${tab}_export.csv`; a.click();
+      a.href = url; a.download = `${tab}_export.${fmt === "xlsx" ? "xlsx" : "csv"}`; a.click();
       URL.revokeObjectURL(url);
-      toast.success("Export downloaded");
+      toast.success(`${fmt === "xlsx" ? "Excel" : "CSV"} export downloaded`);
     } catch { toast.error("Export failed"); }
   };
 
@@ -159,9 +159,14 @@ export default function AdminDashboard() {
               <button className="lg:hidden text-slate-600" onClick={() => setSidebar(true)}><Menu className="h-5 w-5" /></button>
               <h1 className="font-heading text-lg font-bold text-slate-900">{TABS.find((t) => t.key === tab)?.label}</h1>
             </div>
-            <Button onClick={exportCsv} data-testid="export-csv" variant="outline" className="rounded-sm border-slate-300 h-9 text-sm">
-              <Download className="h-4 w-4 mr-2" /> Export CSV
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={() => exportFile("xlsx")} data-testid="export-xlsx" variant="outline" className="rounded-sm border-slate-300 h-9 text-sm">
+                <Download className="h-4 w-4 mr-2" /> Excel
+              </Button>
+              <Button onClick={() => exportFile("csv")} data-testid="export-csv" variant="outline" className="rounded-sm border-slate-300 h-9 text-sm">
+                <Download className="h-4 w-4 mr-2" /> CSV
+              </Button>
+            </div>
           </div>
         </header>
 

@@ -184,7 +184,51 @@ class TestAdmin:
         r = requests.get(f"{API}/admin/{col}/export", headers=auth_headers)
         assert r.status_code == 200
         assert "text/csv" in r.headers.get("content-type", "")
-        assert b"name" in r.content[:200]
+        assert b"name" in r.content[:200].lower() or b"Name" in r.content[:200]
+
+    @pytest.mark.parametrize("col", ["contacts", "agents", "careers"])
+    def test_export_xlsx(self, auth_headers, col):
+        r = requests.get(f"{API}/admin/{col}/export?format=xlsx", headers=auth_headers)
+        assert r.status_code == 200
+        ctype = r.headers.get("content-type", "")
+        assert "spreadsheetml" in ctype, f"Expected xlsx content-type, got {ctype}"
+        # XLSX files are ZIP archives, magic bytes PK\x03\x04
+        assert r.content[:2] == b"PK", "Response body is not a valid xlsx (missing PK header)"
+        assert "xlsx" in r.headers.get("content-disposition", "")
+
+
+# ---------------- Project-specific agent submissions (Phase 1 additions)
+class TestProjectAgents:
+    def test_apaar_agent_submission(self, auth_headers):
+        marker = f"TEST_APAAR_{uuid.uuid4().hex[:8]}"
+        payload = {"name": marker, "mobile": "9990001111", "email": "apaar@example.com",
+                   "state": "Tamil Nadu", "district": "Chennai", "city": "Chennai", "pincode": "600001",
+                   "occupation": "Teacher", "experience": "5", "role": "District Coordinator",
+                   "project": "APAAR", "message": "APAAR test"}
+        r = requests.post(f"{API}/agents", json=payload)
+        assert r.status_code == 200, r.text
+        # Verify persisted with correct project + role
+        lst = requests.get(f"{API}/admin/agents?search={marker}", headers=auth_headers).json()
+        found = next((d for d in lst if d.get("name") == marker), None)
+        assert found is not None, "APAAR agent not found in admin list"
+        assert found["project"] == "APAAR"
+        assert found["role"] == "District Coordinator"
+        assert found["state"] == "Tamil Nadu"
+
+    def test_pan2_agent_submission(self, auth_headers):
+        marker = f"TEST_PAN2_{uuid.uuid4().hex[:8]}"
+        payload = {"name": marker, "mobile": "9990002222", "email": "pan2@example.com",
+                   "state": "Tamil Nadu", "district": "Coimbatore", "city": "Coimbatore", "pincode": "641001",
+                   "occupation": "Retail", "experience": "2", "role": "Pincode Level Agent",
+                   "project": "PAN 2.0", "message": "PAN2 test"}
+        r = requests.post(f"{API}/agents", json=payload)
+        assert r.status_code == 200, r.text
+        lst = requests.get(f"{API}/admin/agents?search={marker}", headers=auth_headers).json()
+        found = next((d for d in lst if d.get("name") == marker), None)
+        assert found is not None
+        assert found["project"] == "PAN 2.0"
+        assert found["role"] == "Pincode Level Agent"
+        assert found["state"] == "Tamil Nadu"
 
     def test_resume_download_requires_auth(self):
         # Seed a career in this worker
