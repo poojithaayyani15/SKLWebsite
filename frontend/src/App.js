@@ -1,55 +1,63 @@
-import { useEffect } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-import { HOME } from "@/constants/testIds";
+import { Toaster } from "@/components/ui/sonner";
+import ScrollToTop from "@/components/ScrollToTop";
+import PublicLayout from "@/components/PublicLayout";
+import Home from "@/pages/Home";
+import About from "@/pages/About";
+import Projects from "@/pages/Projects";
+import ProjectDetail from "@/pages/ProjectDetail";
+import JoinNetwork from "@/pages/JoinNetwork";
+import Careers from "@/pages/Careers";
+import Contact from "@/pages/Contact";
+import AdminLogin from "@/pages/AdminLogin";
+import AdminDashboard from "@/pages/AdminDashboard";
+import { useAuth } from "@/context/AuthContext";
+import { Navigate } from "react-router-dom";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+function ProtectedRoute({ children }) {
+  const { user } = useAuth();
+  if (user === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="h-10 w-10 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+  if (!user) return <Navigate to="/admin/login" replace />;
+  return children;
+}
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          data-testid={HOME.emergentLink}
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+const withLayout = (Page) => (
+  <PublicLayout>
+    <Page />
+  </PublicLayout>
+);
 
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      <ScrollToTop />
+      <Routes>
+        <Route path="/" element={withLayout(Home)} />
+        <Route path="/about" element={withLayout(About)} />
+        <Route path="/projects" element={withLayout(Projects)} />
+        <Route path="/projects/:slug" element={withLayout(ProjectDetail)} />
+        <Route path="/join" element={withLayout(JoinNetwork)} />
+        <Route path="/careers" element={withLayout(Careers)} />
+        <Route path="/contact" element={withLayout(Contact)} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+      <Toaster position="top-right" richColors />
+    </BrowserRouter>
   );
 }
 

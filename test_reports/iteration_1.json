@@ -1,0 +1,43 @@
+{
+  "summary": "Full backend + frontend regression for SKL Enterprises CRM. Wrote pytest suite covering auth, brute-force, all 3 public submissions (contact, agent, career+resume upload), admin CRUD (list/search/filter/sort, status update, notes, CSV export, resume download, auth guards). Verified UI end-to-end via Playwright: home loads, contact/agent/career forms submit successfully (toasts + DB persisted rows confirmed), admin login/logout/tab switching/search/status change/notes/CSV export/resume view/protected-route redirect all work.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/auth/login", "issue": "Brute-force lockout is keyed on request.client.host+email. Behind the K8s ingress, request.client.host is the internal pod-source IP which varies per pod (observed 10.49.136.2 and 10.49.136.6), so an attacker gets 5 attempts per pod (~5 * N_pods) before lockout. Use X-Forwarded-For (first entry) or key the lockout on email-only for stronger protection."},
+      {"endpoint": "POST /api/careers", "issue": "Endpoint accepts any email string (uses str, not EmailStr). Minor: no validation on malformed email."},
+      {"endpoint": "GET /api/admin/{collection}/export", "issue": "When collection is empty the code substitutes `docs=[{}]` producing a CSV with one empty row instead of just headers. Cosmetic."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Contact page", "issue": "data-testid naming inconsistency: form inputs are 'contact-name', 'contact-email-input', 'contact-phone-input' while the contact info cards use 'contact-email' / 'contact-phone' for mailto/tel links. The review_request lists 'contact-name' as if the same pattern applied. Rename form inputs to 'contact-email' / 'contact-phone' (and rename the info-card links to 'contact-info-email' etc.) for consistency and to match the referenced spec.", "selector": "[data-testid=\"contact-email\"]", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Harden brute-force lockout key (use X-Forwarded-For or email-only) so multi-pod deployments enforce the intended 5-attempt limit.",
+    "Align contact form data-testids with the spec (contact-name / contact-email / contact-phone / contact-subject / contact-message / contact-submit). Rename mailto/tel card testids to avoid collision.",
+    "Use EmailStr in /api/careers Form to reject malformed emails.",
+    "Optional: return only headers (no phantom empty row) when exporting an empty collection."
+  ],
+  "critical_code_review_comments": [
+    "server.py hardcodes lockout identifier from request.client.host — behind ingress this is not the client IP; use the X-Forwarded-For chain.",
+    "AdminDashboard.viewResume passes the JWT via URL query string (?auth=<token>) which is logged in server access logs / browser history. Consider POST + blob download or short-lived signed URL.",
+    "server.py currently has no rate limit on public POST endpoints (/api/contact, /api/agents, /api/careers); consider basic per-IP throttling to prevent spam/abuse."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "100% (22/22 pytest)", "frontend": "100% of tested flows"},
+  "seed_data_creation": "Created contacts/agents/careers rows prefixed with UI_TEST_ or TEST_ during testing; a career record with resume ui_test_resume.pdf was persisted. Test rows for admin status/notes flow are set to Rejected after runs.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "test_credentials": "poojithaayyani1592@gmail.com / SklAdmin@2026 (from /app/memory/test_credentials.md)",
+  "context_for_next_testing_agent": "Backend test suite at /app/backend/tests/backend_test.py is self-seeding (each admin test creates its own contact/career via public endpoints, so it works with pytest-xdist loadscope). Only known runtime quirk: brute-force lockout requires ~6–10 attempts to trigger because backend runs on multiple pods; the test does 8 attempts and passes. No mocks. Resume upload uses Emergent object storage (real). Emails via Emergent Resend integration are best-effort (non-blocking).",
+  "rca_of_the_issue": "Brute-force lockout gap: identifier = f\"{request.client.host}:{email}\". Behind Kubernetes ingress the framework observes the internal L7 proxy IP which round-robins per pod, so each pod maintains an independent counter in the shared Mongo collection. Fix: derive client IP from request.headers['x-forwarded-for'].split(',')[0].strip() (with a safe fallback), or key the lockout on email alone."
+}
