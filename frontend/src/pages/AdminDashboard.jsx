@@ -37,6 +37,7 @@ const MEDIA_FOLDERS = ["General", "APAAR", "PAN 2.0", "Founder", "Team", "Office
 
 const NAV = [
   { key: "overview", label: "Overview", icon: LayoutDashboard, perm: null },
+  { key: "search", label: "Global Search", icon: Search, perm: null },
   { key: "leads", label: "Leads & CRM", icon: Inbox, perm: "leads" },
   { key: "media", label: "Media Library", icon: ImageIcon, perm: "media" },
   { key: "careers", label: "Careers", icon: Briefcase, perm: "careers" },
@@ -93,6 +94,7 @@ export default function AdminDashboard() {
         </header>
         <div className="p-5 lg:p-8">
           {section === "overview" && <Overview setSection={setSection} />}
+          {section === "search" && <GlobalSearch />}
           {section === "leads" && <Leads token={token} />}
           {section === "media" && <Media token={token} />}
           {section === "careers" && <Openings />}
@@ -234,28 +236,34 @@ function Leads({ token }) {
 /* ---------------- MEDIA ---------------- */
 function Media({ token }) {
   const [folder, setFolder] = useState("all");
+  const [q, setQ] = useState("");
   const [items, setItems] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [upFolder, setUpFolder] = useState("General");
   const load = useCallback(async () => { try { const { data } = await api.get("/admin/media", { params: { folder } }); setItems(data); } catch { toast.error("Failed"); } }, [folder]);
   useEffect(() => { load(); }, [load]);
+  const shown = items.filter((m) => (m.original_filename || "").toLowerCase().includes(q.toLowerCase()));
   const upload = async (e) => { const f = e.target.files[0]; if (!f) return; setUploading(true); try { const fd = new FormData(); fd.append("folder", upFolder); fd.append("file", f); await api.post("/admin/media", fd, { headers: { "Content-Type": "multipart/form-data" } }); toast.success("Uploaded"); load(); } catch (err) { toast.error(formatApiError(err.response?.data?.detail) || "Upload failed"); } finally { setUploading(false); e.target.value = ""; } };
   const del = async (id) => { if (!window.confirm("Delete this file?")) return; try { await api.delete(`/admin/media/${id}`); setItems((x) => x.filter((i) => i.id !== id)); toast.success("Deleted"); } catch { toast.error("Failed"); } };
   return (
     <div>
       <div className="flex flex-wrap gap-3 mb-5 items-center">
+        <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" /><Input data-testid="media-search" placeholder="Search files…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9 h-10 rounded-sm w-52" /></div>
         <Select value={folder} onValueChange={setFolder}><SelectTrigger className="w-44 h-10 rounded-sm" data-testid="media-folder-filter"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Folders</SelectItem>{MEDIA_FOLDERS.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent></Select>
         <div className="ml-auto flex gap-2 items-center">
           <Select value={upFolder} onValueChange={setUpFolder}><SelectTrigger className="w-40 h-10 rounded-sm" data-testid="media-upload-folder"><SelectValue /></SelectTrigger><SelectContent>{MEDIA_FOLDERS.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent></Select>
           <label className="inline-flex items-center gap-2 bg-royal hover:bg-royal-dark text-white px-4 h-10 rounded-sm cursor-pointer text-sm font-medium" data-testid="media-upload">{uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Upload<input type="file" className="hidden" onChange={upload} accept="image/*,video/*,.pdf,.docx" /></label>
         </div>
       </div>
-      {items.length === 0 ? <div className="py-20 text-center text-slate-400"><FolderOpen className="h-10 w-10 mx-auto mb-3 opacity-40" />No media in this folder.</div>
-        : <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">{items.map((m) => { const url = `${API}/admin/media/${m.id}/file?auth=${token}`; const isImg = (m.content_type || "").startsWith("image"); return (
+      {shown.length === 0 ? <div className="py-20 text-center text-slate-400"><FolderOpen className="h-10 w-10 mx-auto mb-3 opacity-40" />No media found.</div>
+        : <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">{shown.map((m) => { const url = `${API}/admin/media/${m.id}/file?auth=${token}`; const isImg = (m.content_type || "").startsWith("image"); return (
           <div key={m.id} className="bg-white border border-slate-200 rounded-sm overflow-hidden group" data-testid={`media-${m.id}`}>
             <div className="aspect-square bg-slate-100 flex items-center justify-center overflow-hidden">{isImg ? <img src={url} alt={m.original_filename} loading="lazy" className="w-full h-full object-cover" /> : <FileText className="h-10 w-10 text-slate-400" />}</div>
             <div className="p-2"><p className="text-xs text-slate-600 truncate" title={m.original_filename}>{m.original_filename}</p><p className="text-[10px] text-gold uppercase">{m.folder}</p>
-              <div className="flex justify-between mt-1"><a href={url} target="_blank" rel="noreferrer" className="text-royal"><ExternalLink className="h-3.5 w-3.5" /></a><button onClick={() => del(m.id)} data-testid={`media-del-${m.id}`} className="text-rose-500"><Trash2 className="h-3.5 w-3.5" /></button></div></div>
+              <div className="flex items-center justify-between mt-1">
+                <button onClick={() => { navigator.clipboard.writeText(url); toast.success("URL copied — reuse it anywhere"); }} data-testid={`media-copy-${m.id}`} className="text-[10px] text-royal font-medium">Copy URL</button>
+                <div className="flex gap-2"><a href={url} target="_blank" rel="noreferrer" className="text-slate-500"><ExternalLink className="h-3.5 w-3.5" /></a><button onClick={() => del(m.id)} data-testid={`media-del-${m.id}`} className="text-rose-500"><Trash2 className="h-3.5 w-3.5" /></button></div>
+              </div></div>
           </div>); })}</div>}
     </div>
   );
@@ -383,22 +391,30 @@ function SettingsEditor() {
   if (!d) return <Loader2 className="h-6 w-6 animate-spin text-royal" />;
   const fields = [
     ["company_name", "Company Name"], ["positioning", "Positioning"], ["tagline", "Tagline"],
+    ["hero_headline", "Hero Headline"], ["hero_subheadline", "Hero Subheadline"], ["hero_image", "Hero Image URL"],
     ["address", "Office Address"], ["phone", "Phone"], ["whatsapp", "WhatsApp"], ["email", "Email"],
     ["hours", "Business Hours"], ["founder_name", "Founder Name"], ["founder_title", "Founder Title"],
-    ["linkedin", "LinkedIn URL"], ["twitter", "Twitter/X URL"], ["facebook", "Facebook URL"],
-    ["seo_description", "SEO Description"], ["partnership", "Strategic Partnership Statement"],
+    ["company_description", "Company Description (footer)"], ["footer_note", "Footer Note"],
+    ["linkedin", "LinkedIn URL"], ["facebook", "Facebook URL"], ["instagram", "Instagram URL"],
+    ["youtube", "YouTube URL"], ["twitter", "X / Twitter URL"],
+    ["seo_description", "Default SEO Description"], ["partnership", "Strategic Partnership Statement"],
   ];
+  const wide = ["seo_description", "partnership", "address", "hero_subheadline", "company_description"];
   return (
     <div className="bg-white border border-slate-200 rounded-sm p-6 lg:p-8 max-w-3xl" data-testid="settings-form">
       <div className="grid sm:grid-cols-2 gap-4">
         {fields.map(([k, label]) => (
-          <div key={k} className={["seo_description", "partnership", "address"].includes(k) ? "sm:col-span-2" : ""}>
+          <div key={k} className={wide.includes(k) ? "sm:col-span-2" : ""}>
             <Label className="mb-1 block">{label}</Label>
-            {["seo_description", "partnership", "address"].includes(k)
+            {wide.includes(k)
               ? <Textarea value={d[k] || ""} onChange={(e) => setD({ ...d, [k]: e.target.value })} rows={2} className="rounded-sm" data-testid={`set-${k}`} />
               : <Input value={d[k] || ""} onChange={(e) => setD({ ...d, [k]: e.target.value })} className="rounded-sm" data-testid={`set-${k}`} />}
           </div>
         ))}
+      </div>
+      <div className="mt-6 border-t border-slate-200 pt-6 grid sm:grid-cols-2 gap-4">
+        <div><Label className="mb-1 block">Maintenance Mode</Label><Select value={d.maintenance_mode ? "on" : "off"} onValueChange={(v) => setD({ ...d, maintenance_mode: v === "on" })}><SelectTrigger className="rounded-sm" data-testid="set-maintenance"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="off">Off — site is live</SelectItem><SelectItem value="on">On — show maintenance page</SelectItem></SelectContent></Select></div>
+        <div><Label className="mb-1 block">Maintenance Message</Label><Input value={d.maintenance_message || ""} onChange={(e) => setD({ ...d, maintenance_message: e.target.value })} className="rounded-sm" data-testid="set-maintenance_message" /></div>
       </div>
       <Button onClick={save} disabled={saving} data-testid="settings-save" className="mt-6 bg-royal text-white rounded-sm h-11 px-8">{saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null} Save Settings</Button>
     </div>

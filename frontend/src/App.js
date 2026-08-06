@@ -15,6 +15,9 @@ import Careers from "@/pages/Careers";
 import Contact from "@/pages/Contact";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
+import NotFound from "@/pages/NotFound";
+import Legal from "@/pages/Legal";
+import MaintenanceGate from "@/components/MaintenanceGate";
 import { useAuth } from "@/context/AuthContext";
 
 function ProtectedRoute({ children }) {
@@ -37,9 +40,11 @@ function FloatingUI() {
 }
 
 const withLayout = (Page) => (
-  <PublicLayout>
-    <Page />
-  </PublicLayout>
+  <MaintenanceGate>
+    <PublicLayout>
+      <Page />
+    </PublicLayout>
+  </MaintenanceGate>
 );
 
 function App() {
@@ -55,8 +60,11 @@ function App() {
         <Route path="/join" element={withLayout(JoinNetwork)} />
         <Route path="/careers" element={withLayout(Careers)} />
         <Route path="/contact" element={withLayout(Contact)} />
+        <Route path="/privacy" element={withLayout(() => <Legal type="privacy" />)} />
+        <Route path="/terms" element={withLayout(() => <Legal type="terms" />)} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <FloatingUI />
       <Toaster position="top-right" richColors />

@@ -778,6 +778,22 @@ async def overview(user: dict = Depends(get_current_user)):
     return stats
 
 
+@api_router.get("/admin/search")
+async def global_search(q: str = Query(""), user: dict = Depends(get_current_user)):
+    q = q.strip()
+    empty = {"pages": [], "projects": [], "careers": [], "downloads": [], "media": []}
+    if not q:
+        return empty
+    rx = {"$regex": q, "$options": "i"}
+    projects = await db.projects.find({"$or": [{"name": rx}, {"slug": rx}, {"tagline": rx}]}).to_list(20)
+    openings = await db.job_openings.find({"$or": [{"title": rx}, {"desc": rx}, {"location": rx}]}).to_list(20)
+    downloads = await db.downloads.find({"$or": [{"label": rx}, {"category": rx}]}).to_list(20)
+    media = await db.media.find({"original_filename": rx, "is_deleted": {"$ne": True}}).to_list(20)
+    pages = [p for p in ["Home", "About Us", "Projects", "APAAR", "PAN 2.0", "Careers", "Contact", "Join Our Network"] if q.lower() in p.lower()]
+    return {"pages": pages, "projects": [clean(d) for d in projects], "careers": [clean(d) for d in openings],
+            "downloads": [clean(d) for d in downloads], "media": [clean(d) for d in media]}
+
+
 app.include_router(api_router)
 
 app.add_middleware(
@@ -803,7 +819,14 @@ async def seed_cms():
             "partnership": "SKL Enterprises serves as the South India Channel Partner of EAS, supporting the implementation and expansion of digital public service initiatives across the region.",
             "founder_name": "E.L. Ashok Anand",
             "founder_title": "Founder & Managing Director",
-            "linkedin": "", "twitter": "", "facebook": "",
+            "linkedin": "", "twitter": "", "facebook": "", "instagram": "", "youtube": "",
+            "hero_headline": "Technology-Driven Public Service Solutions",
+            "hero_subheadline": "Empowering Digital Citizen Services Across India through innovation, technology, operational excellence and trusted execution.",
+            "hero_image": "",
+            "company_description": "Technology-Driven Public Service Solutions. Empowering digital citizen services across India through trusted execution.",
+            "footer_note": "",
+            "maintenance_mode": False,
+            "maintenance_message": "Our website is undergoing scheduled maintenance. Please check back shortly.",
             "seo_description": "SKL Enterprises — Technology-Driven Public Service Solutions. Empowering digital citizen services across India.",
         }, "updated_at": now_iso()}}, upsert=True)
     if await db.job_openings.count_documents({}) == 0:

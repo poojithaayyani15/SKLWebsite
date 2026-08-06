@@ -379,6 +379,98 @@ class TestMedia:
         assert not any(m["id"] == mid for m in arr)
 
 
+# ---------------- New settings keys, global search, sitemap/robots
+class TestNewSettingsKeys:
+    def test_settings_contains_new_keys(self, admin_headers):
+        r = requests.get(f"{API}/admin/settings", headers=admin_headers)
+        assert r.status_code == 200
+        j = r.json()
+        for k in ["hero_headline", "hero_subheadline", "hero_image", "company_description",
+                  "footer_note", "instagram", "youtube", "linkedin", "facebook", "twitter",
+                  "maintenance_mode", "maintenance_message"]:
+            assert k in j, f"settings missing key {k}"
+
+    def test_update_social_links_reflects_public(self, admin_headers):
+        cur = requests.get(f"{API}/admin/settings", headers=admin_headers).json()
+        old_li = cur.get("linkedin", "")
+        old_ig = cur.get("instagram", "")
+        cur["linkedin"] = "https://linkedin.com/company/skl-test"
+        cur["instagram"] = "https://instagram.com/skl_test"
+        r = requests.put(f"{API}/admin/settings", headers=admin_headers, json={"data": cur})
+        assert r.status_code == 200
+        pub = requests.get(f"{API}/public/settings").json()
+        assert pub["linkedin"] == "https://linkedin.com/company/skl-test"
+        assert pub["instagram"] == "https://instagram.com/skl_test"
+        # restore
+        cur["linkedin"] = old_li
+        cur["instagram"] = old_ig
+        requests.put(f"{API}/admin/settings", headers=admin_headers, json={"data": cur})
+
+    def test_update_hero_headline_reflects_public(self, admin_headers):
+        cur = requests.get(f"{API}/admin/settings", headers=admin_headers).json()
+        old = cur.get("hero_headline", "")
+        cur["hero_headline"] = "TEST Hero Headline"
+        requests.put(f"{API}/admin/settings", headers=admin_headers, json={"data": cur})
+        pub = requests.get(f"{API}/public/settings").json()
+        assert pub["hero_headline"] == "TEST Hero Headline"
+        # restore
+        cur["hero_headline"] = old
+        requests.put(f"{API}/admin/settings", headers=admin_headers, json={"data": cur})
+
+    def test_maintenance_mode_toggle_and_restore(self, admin_headers):
+        cur = requests.get(f"{API}/admin/settings", headers=admin_headers).json()
+        cur["maintenance_mode"] = True
+        requests.put(f"{API}/admin/settings", headers=admin_headers, json={"data": cur})
+        pub = requests.get(f"{API}/public/settings").json()
+        assert pub["maintenance_mode"] is True
+        # restore
+        cur["maintenance_mode"] = False
+        requests.put(f"{API}/admin/settings", headers=admin_headers, json={"data": cur})
+        pub = requests.get(f"{API}/public/settings").json()
+        assert pub["maintenance_mode"] is False
+
+
+class TestGlobalSearch:
+    def test_search_requires_auth(self):
+        r = requests.get(f"{API}/admin/search?q=apaar")
+        assert r.status_code == 401
+
+    def test_search_empty_returns_groups(self, admin_headers):
+        r = requests.get(f"{API}/admin/search?q=", headers=admin_headers)
+        assert r.status_code == 200
+        j = r.json()
+        for k in ["pages", "projects", "careers", "downloads", "media"]:
+            assert k in j and j[k] == []
+
+    def test_search_apaar_returns_project(self, admin_headers):
+        r = requests.get(f"{API}/admin/search?q=apaar", headers=admin_headers)
+        assert r.status_code == 200
+        j = r.json()
+        slugs = {p.get("slug") for p in j["projects"]}
+        assert "apaar" in slugs
+        # pages should contain APAAR
+        assert any("APAAR" in p for p in j["pages"])
+
+    def test_search_coordinator_hits_careers(self, admin_headers):
+        r = requests.get(f"{API}/admin/search?q=coordinator", headers=admin_headers)
+        assert r.status_code == 200
+        j = r.json()
+        # State Project Coordinator seeded
+        assert len(j["careers"]) > 0
+
+
+class TestSitemapAndRobots:
+    def test_sitemap_served(self):
+        r = requests.get(f"{BASE_URL}/sitemap.xml")
+        assert r.status_code == 200
+        assert "<urlset" in r.text
+
+    def test_robots_served(self):
+        r = requests.get(f"{BASE_URL}/robots.txt")
+        assert r.status_code == 200
+        assert "Sitemap" in r.text or "User-agent" in r.text
+
+
 # ---------------- Activity & Overview
 class TestActivityOverview:
     def test_overview_shape(self, admin_headers):

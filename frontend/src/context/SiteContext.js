@@ -32,6 +32,15 @@ export function SiteProvider({ children }) {
             linkedin: data.linkedin || "",
             twitter: data.twitter || "",
             facebook: data.facebook || "",
+            instagram: data.instagram || "",
+            youtube: data.youtube || "",
+            hero_headline: data.hero_headline || "",
+            hero_subheadline: data.hero_subheadline || "",
+            hero_image: data.hero_image || "",
+            company_description: data.company_description || "",
+            footer_note: data.footer_note || "",
+            maintenance_mode: !!data.maintenance_mode,
+            maintenance_message: data.maintenance_message || "",
           });
         }
       } catch { /* fallback to static */ }

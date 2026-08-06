@@ -8,18 +8,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { Reveal, Overline } from "@/components/Reveal";
 import StatCounter from "@/components/StatCounter";
+import { useCompany } from "@/context/SiteContext";
 import { COMPANY, IMAGES, STATS, SERVICES, WHY_US, FOUNDER, PROJECTS } from "@/data/content";
 
 const ICONS = { Users, ShieldCheck, Network, Server, Gauge, Headset };
 
 export default function Home() {
+  const company = useCompany();
+  const heroImg = company.hero_image || IMAGES.heroOffice;
+  const heroHeadline = company.hero_headline || "Technology-Driven Public Service Solutions";
+  const heroSub = company.hero_subheadline || "Empowering Digital Citizen Services Across India through innovation, technology, operational excellence and trusted execution.";
   return (
     <div data-testid="home-page">
       <SEO title="Technology-Driven Public Service Solutions" description="SKL Enterprises empowers digital citizen services across India through innovation, technology, operational excellence and trusted execution. Explore APAAR & PAN 2.0." path="/" />
       {/* HERO */}
       <section className="relative min-h-screen flex items-center" data-testid="hero-section">
         <div className="absolute inset-0">
-          <img src={IMAGES.heroOffice} alt="SKL Enterprises corporate team" className="w-full h-full object-cover" />
+          <img src={heroImg} alt="SKL Enterprises corporate team" className="w-full h-full object-cover" />
           <div className="absolute inset-0 hero-overlay" />
         </div>
         <div className="relative max-w-7xl mx-auto px-6 lg:px-8 pt-28 pb-20 w-full">
@@ -30,11 +35,10 @@ export default function Home() {
           >
             <span className="section-label">SKL Enterprises</span>
             <h1 className="mt-5 font-heading text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white text-balance leading-[1.05]">
-              Technology-Driven Public Service Solutions
+              {heroHeadline}
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-white/80 leading-relaxed max-w-2xl">
-              Empowering Digital Citizen Services Across India through innovation, technology,
-              operational excellence and trusted execution.
+              {heroSub}
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4">
               <Link to="/projects" data-testid="hero-explore-btn">

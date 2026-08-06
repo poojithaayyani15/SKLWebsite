@@ -9,6 +9,7 @@ import { Reveal, Overline } from "@/components/Reveal";
 import SEO from "@/components/SEO";
 import api, { formatApiError } from "@/lib/api";
 import { useCompany } from "@/context/SiteContext";
+import SocialIcons from "@/components/SocialIcons";
 
 export default function Contact() {
   const COMPANY = useCompany();
@@ -112,6 +113,7 @@ export default function Contact() {
                 <div>
                   <p className="font-heading font-semibold">Business Hours</p>
                   <p className="text-white/80 text-sm mt-1">{COMPANY.hours}</p>
+                  <div className="mt-4"><SocialIcons tone="dark" /></div>
                 </div>
               </div>
             </div>

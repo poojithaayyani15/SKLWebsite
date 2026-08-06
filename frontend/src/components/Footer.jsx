@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import { MapPin, Phone, Mail, MessageCircle } from "lucide-react";
 import { useCompany } from "@/context/SiteContext";
+import SocialIcons from "@/components/SocialIcons";
 
 export default function Footer() {
   const COMPANY = useCompany();
@@ -11,8 +12,9 @@ export default function Footer() {
         <div className="lg:col-span-1">
           <Logo variant="light" />
           <p className="mt-6 text-sm leading-relaxed text-slate-400 max-w-xs">
-            {COMPANY.positioning}. Empowering digital citizen services across India through trusted execution.
+            {COMPANY.company_description || `${COMPANY.positioning}. Empowering digital citizen services across India through trusted execution.`}
           </p>
+          <SocialIcons className="mt-6" tone="dark" />
         </div>
 
         <div>
@@ -49,7 +51,11 @@ export default function Footer() {
       <div className="border-t border-slate-800">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
           <p>© {new Date().getFullYear()} SKL Enterprises. All rights reserved.</p>
-          <p>Founder &amp; Managing Director — E.L. Ashok Anand</p>
+          <div className="flex items-center gap-5">
+            <Link to="/privacy" className="hover:text-gold transition-colors" data-testid="footer-privacy">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-gold transition-colors" data-testid="footer-terms">Terms &amp; Conditions</Link>
+            <span className="hidden sm:inline">Founder — E.L. Ashok Anand</span>
+          </div>
         </div>
       </div>
     </footer>

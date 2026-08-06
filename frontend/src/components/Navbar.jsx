@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import SocialIcons from "@/components/SocialIcons";
 
 const links = [
   { to: "/", label: "Home" },
   { to: "/about", label: "About Us" },
   { to: "/projects", label: "Projects" },
-  { to: "/join", label: "Join Our Network" },
   { to: "/careers", label: "Careers" },
   { to: "/contact", label: "Contact" },
 ];
@@ -91,6 +91,9 @@ export default function Navbar() {
           <Link to="/join">
             <Button className="w-full mt-2 bg-royal text-white rounded-sm">Join Our Network</Button>
           </Link>
+          <div className="pt-4 mt-2 border-t border-slate-200">
+            <SocialIcons tone="light" />
+          </div>
         </div>
       )}
     </header>

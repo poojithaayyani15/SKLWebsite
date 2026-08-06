@@ -1,0 +1,40 @@
+{
+  "summary": "Iteration 4: Tested the SKL Enterprises 'final production' additions — simplified header, editable social icons, expanded Website Settings, maintenance mode, custom 404, legal pages (privacy/terms), footer legal links, media search + copy-URL, GLOBAL SEARCH, sitemap.xml + robots.txt. Added 9 new pytest cases (TestNewSettingsKeys, TestGlobalSearch, TestSitemapAndRobots) to /app/backend/tests/backend_test.py (now 50 tests). Backend: 49/50 pass — only failure is that GET /api/admin/settings does NOT include the new keys (hero_headline, company_description, footer_note, maintenance_mode, hero_subheadline, hero_image) because seed_cms only inserts on first-run and doesn't migrate an existing settings doc. Public/admin PUT + subsequent GET all work; global search returns the expected groups (apaar -> projects+pages, coordinator -> careers); sitemap.xml is served correctly at the site root. Frontend: navbar centre shows exactly Home / About Us / Projects / Careers / Contact (no 'Join Our Network' center item), right-side CTA [data-testid=nav-cta-agent] reads 'Join Our Network' and links to /join, custom 404 renders [not-found-page], /privacy [legal-privacy] and /terms [legal-terms] render, footer has [footer-privacy]->/privacy and [footer-terms]->/terms, footer + Contact page render [data-testid=social-icons], Website Settings UI shows Hero Headline / Hero Subheadline / Company Description / Footer Note / Instagram / LinkedIn / Facebook / YouTube / Maintenance fields and [settings-save] persists. Media Library shows [media-search] + [media-upload]. **CRITICAL BUG**: Clicking the sidebar's 'Global Search' item throws an uncaught ReferenceError: 'GlobalSearch is not defined' (AdminDashboard.jsx line 97 references <GlobalSearch /> but the component is never declared/imported). The Global-Search sidebar tab is therefore completely broken in the UI even though the backend endpoint works.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/admin/settings", "issue": "Existing settings doc created by earlier iterations lacks the new keys (hero_headline, hero_subheadline, hero_image, company_description, footer_note, maintenance_mode, maintenance_message). seed_cms only inserts when the doc is missing, so no migration ever adds these fields. Frontend has fallbacks so the UI still renders, but a fresh GET is incomplete. Fix: on startup, run an $set that merges default new keys into the existing site settings, or return defaults from get_settings."},
+      {"endpoint": "GET /robots.txt", "issue": "The preview ingress (Cloudflare) intercepts /robots.txt and serves a generic 'content signals' robots.txt instead of /app/frontend/public/robots.txt. Sitemap.xml is unaffected. In production this may or may not repeat depending on hosting; verify on the real domain."},
+      {"endpoint": "GET /api/admin/careers/{id}/resume", "issue": "Carried over from iter3: still at the legacy path, not under /admin/leads/*."},
+      {"endpoint": "POST /api/careers", "issue": "email still accepted as plain str (carried over)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "AdminDashboard / GlobalSearch", "issue": "ReferenceError: GlobalSearch is not defined. /app/frontend/src/pages/AdminDashboard.jsx line 97 renders <GlobalSearch /> when section === 'search', but no GlobalSearch component is declared or imported anywhere in the file. Clicking the 'Global Search' sidebar item (data-testid=section-search) throws an uncaught runtime error overlay and the [data-testid=global-search-input] never renders. This is a hard blocker for the Global-Search feature; the backend /api/admin/search endpoint itself is fine.", "selector": "[data-testid=section-search] -> expects [data-testid=global-search-input]", "priority": "CRITICAL"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "CRITICAL: Implement the missing GlobalSearch component in /app/frontend/src/pages/AdminDashboard.jsx (or import it from another module). It should render an input with data-testid=global-search-input, debounce a GET /api/admin/search?q=<term>, and render grouped results (pages / projects / careers / downloads / media).",
+    "Migrate existing site settings on startup: extend seed_cms to also $set new keys (hero_headline, hero_subheadline, hero_image, company_description, footer_note, maintenance_mode, maintenance_message, seo_description) with defaults on the EXISTING settings doc — currently these are only inserted when the doc is missing.",
+    "Verify /robots.txt is served from the app in production (preview URL is intercepted by Cloudflare edge)."
+  ],
+  "critical_code_review_comments": [
+    "AdminDashboard.jsx:97 — <GlobalSearch /> is referenced but never defined. React does not catch this at compile time; it throws a ReferenceError at render time when the user clicks section-search.",
+    "seed_cms uses `find_one is None` gating for the settings doc, so schema evolution never runs against existing installs. Prefer a merge/upsert with $setOnInsert for new keys."
+  ],
+  "updated_files": ["/app/backend/tests/backend_test.py"],
+  "success_rate": {"backend": "98% (49/50 pytest)", "frontend": "public site 100%, admin dashboard 90% (Global Search tab broken; all other sections OK)"},
+  "seed_data_creation": "Created + cleaned up transient TEST_ users, contact, career, opening, download, project and media entries via pytest teardown. Toggled maintenance_mode on then OFF (verified public/settings.maintenance_mode === false at end). Toggled linkedin/instagram + hero_headline and restored to originals.",
+  "should_call_test_agent_after_fix": true,
+  "should_main_agent_self_test": false,
+  "test_credentials": "poojithaayyani1592@gmail.com / SklAdmin@2026 (super_admin)",
+  "context_for_next_testing_agent": "The only blocker is the missing GlobalSearch React component in AdminDashboard.jsx. After the main agent adds it (must expose data-testid=global-search-input), re-run pytest (all should pass once the settings migration is also fixed) and re-run the admin UI flow: login -> click [data-testid=section-search] -> type 'apaar' into [data-testid=global-search-input] -> expect grouped results incl. an APAAR project. Also verify 'coordinator' returns careers. The 50th failing pytest (TestNewSettingsKeys::test_settings_contains_new_keys) will pass once seed_cms $sets defaults on the existing settings doc.",
+  "rca_of_the_issue": "GlobalSearch bug: developer wired up the sidebar entry and JSX `<GlobalSearch />` but never authored the component (no import, no local function). React renders the parent fine on 'overview', but as soon as section flips to 'search', createElement(GlobalSearch,...) throws ReferenceError. Settings-keys bug: seed_cms gate `find_one is None` prevents any schema evolution — once the doc exists, no new default keys are ever added even if server.py declares them."
+}
