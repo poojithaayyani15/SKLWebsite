@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Reveal, Overline } from "@/components/Reveal";
 import SEO from "@/components/SEO";
 import api, { formatApiError } from "@/lib/api";
-import { COMPANY } from "@/data/content";
+import { useCompany } from "@/context/SiteContext";
 
 export default function Contact() {
+  const COMPANY = useCompany();
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);

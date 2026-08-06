@@ -54,7 +54,7 @@ export default function ProjectDetail() {
               <p className="mt-5 text-xl text-white/85 max-w-xl">{p.tagline}</p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <span className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white px-4 py-2 rounded-sm text-sm"><MapPin className="h-4 w-4 text-gold" /> Coverage: {p.coverage}</span>
-                <a href="#become-agent" className="inline-flex items-center gap-2 bg-gold hover:bg-gold-dark text-slate-900 font-semibold px-5 py-2 rounded-sm text-sm transition-colors" data-testid="hero-agent-cta">Become an Agent <ArrowRight className="h-4 w-4" /></a>
+                <a href="#become-agent" className="inline-flex items-center gap-2 bg-gold hover:bg-gold-dark text-slate-900 font-semibold px-5 py-2 rounded-sm text-sm transition-colors" data-testid="hero-agent-cta">Join Our Network <ArrowRight className="h-4 w-4" /></a>
               </div>
             </div>
             <div className="relative">
@@ -185,7 +185,7 @@ export default function ProjectDetail() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-start">
           <Reveal>
             <Overline>Recruiting Now</Overline>
-            <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-slate-900">Become a {p.name} Agent</h2>
+            <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-slate-900">Join the {p.name} Network</h2>
             <p className="mt-5 text-lg text-slate-600 leading-relaxed">Join our trusted network delivering {p.name} services across {p.coverage}. We are actively recruiting:</p>
             <div className="mt-6 space-y-3">
               {p.recruiting.map((r) => (
@@ -203,7 +203,7 @@ export default function ProjectDetail() {
           </Reveal>
           <Reveal delay={0.1}>
             <div className="bg-white border border-slate-200 rounded-sm p-8 card-shadow">
-              <h3 className="font-heading text-xl font-semibold text-slate-900 mb-6">Agent Application — {p.name}</h3>
+              <h3 className="font-heading text-xl font-semibold text-slate-900 mb-6">Network Application — {p.name}</h3>
               <AgentForm
                 project={p.name}
                 positions={p.positions}

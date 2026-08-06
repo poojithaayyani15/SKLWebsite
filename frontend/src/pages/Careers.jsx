@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Reveal, Overline } from "@/components/Reveal";
 import SEO from "@/components/SEO";
 import api, { formatApiError } from "@/lib/api";
+import { useSite } from "@/context/SiteContext";
 import { IMAGES } from "@/data/content";
 
 const OPENINGS = [
@@ -18,6 +19,8 @@ const OPENINGS = [
 ];
 
 export default function Careers() {
+  const { openings } = useSite();
+  const list = openings && openings.length ? openings : OPENINGS;
   const [form, setForm] = useState({ name: "", email: "", phone: "", position: "", experience: "", message: "" });
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -61,8 +64,8 @@ export default function Careers() {
           <Overline>Current Openings</Overline>
           <h2 className="font-heading text-3xl lg:text-4xl font-semibold text-slate-900 mb-10">Roles we're hiring for</h2>
           <div className="grid sm:grid-cols-2 gap-6">
-            {OPENINGS.map((o, i) => (
-              <Reveal key={o.title} delay={i * 0.05}>
+            {list.map((o, i) => (
+              <Reveal key={o.id || o.title} delay={i * 0.05}>
                 <button
                   onClick={() => { setForm((f) => ({ ...f, position: o.title })); document.getElementById("apply")?.scrollIntoView({ behavior: "smooth" }); }}
                   className="text-left w-full group bg-white border border-slate-200 rounded-sm p-7 card-shadow hover:border-royal transition-colors"
@@ -70,7 +73,7 @@ export default function Careers() {
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-11 w-11 rounded-sm bg-royal/10 flex items-center justify-center"><Briefcase className="h-5 w-5 text-royal" /></div>
-                    <div><h3 className="font-heading text-lg font-semibold text-slate-900 group-hover:text-royal transition-colors">{o.title}</h3><p className="text-xs text-gold uppercase tracking-wider">{o.type}</p></div>
+                    <div><h3 className="font-heading text-lg font-semibold text-slate-900 group-hover:text-royal transition-colors">{o.title}</h3><p className="text-xs text-gold uppercase tracking-wider">{o.type}{o.location ? ` · ${o.location}` : ""}</p></div>
                   </div>
                   <p className="mt-4 text-slate-600 leading-relaxed">{o.desc}</p>
                   <span className="mt-4 inline-block text-royal font-semibold text-sm">Apply for this role →</span>

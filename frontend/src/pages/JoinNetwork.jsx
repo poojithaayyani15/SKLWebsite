@@ -1,27 +1,59 @@
-import { Network, Users, Award } from "lucide-react";
-import SEO from "@/components/SEO";
+import { Network, Users, Award, GraduationCap, CreditCard } from "lucide-react";
 import { Reveal, Overline } from "@/components/Reveal";
+import SEO from "@/components/SEO";
 import AgentForm from "@/components/AgentForm";
+import { PROJECTS } from "@/data/content";
 
 export default function JoinNetwork() {
+  const projects = [PROJECTS.apaar, PROJECTS["pan-2"]];
   return (
     <div data-testid="join-page">
-      <SEO title="Join Our Network — Become an Agent" description="Become an SKL Enterprises agent and deliver essential digital citizen services across South India. Register as a coordinator or field agent." path="/join" />
+      <SEO title="Join Our Network — Become a Partner" description="Join the SKL Enterprises network and deliver essential digital citizen services across South India. Coordinator and agent roles open for APAAR and PAN 2.0." path="/join" />
       <section className="relative pt-36 pb-20 bg-royal-dark overflow-hidden">
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 80% 20%, #C5A059 0, transparent 45%)" }} />
         <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
           <Overline className="!text-gold">Join Our Network</Overline>
           <h1 className="mt-3 font-heading text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white max-w-4xl text-balance">
-            Build a rewarding future as an SKL agent
+            Build a rewarding future with SKL Enterprises
           </h1>
           <p className="mt-6 text-lg text-white/75 max-w-2xl">
-            Become part of a trusted field network delivering essential digital citizen services
-            across South India. Register below and our partnerships team will reach out.
+            Become part of a trusted network delivering essential digital citizen services
+            across South India. Choose a project below and register — our team will reach out.
           </p>
         </div>
       </section>
 
-      <section className="py-24 lg:py-32">
+      {/* PROJECT OPPORTUNITIES */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 grid md:grid-cols-2 gap-8">
+          {projects.map((p, i) => (
+            <Reveal key={p.slug} delay={i * 0.08}>
+              <div className="border border-slate-200 rounded-sm p-8 card-shadow h-full bg-white" data-testid={`join-project-${p.slug}`}>
+                <div className="flex items-center gap-3">
+                  <div className="h-11 w-11 rounded-sm bg-royal/10 flex items-center justify-center">
+                    {p.slug === "apaar" ? <GraduationCap className="h-5 w-5 text-royal" /> : <CreditCard className="h-5 w-5 text-royal" />}
+                  </div>
+                  <div>
+                    <h3 className="font-heading text-xl font-semibold text-slate-900">{p.name}</h3>
+                    <p className="text-xs text-gold uppercase tracking-wider">Coverage: {p.coverage}</p>
+                  </div>
+                </div>
+                <p className="mt-4 text-sm font-semibold text-slate-500 uppercase tracking-wider">Positions</p>
+                <div className="mt-3 space-y-2">
+                  {p.recruiting.map((r) => (
+                    <div key={r} className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-sm px-4 py-3">
+                      <div className="h-2 w-2 rounded-full bg-gold" /><span className="text-slate-800 text-sm font-medium">{r}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* REGISTRATION FORM */}
+      <section className="pb-24">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-5 gap-14 items-start">
           <Reveal className="lg:col-span-2 space-y-8">
             {[
@@ -40,8 +72,13 @@ export default function JoinNetwork() {
           </Reveal>
           <Reveal delay={0.1} className="lg:col-span-3">
             <div className="bg-white border border-slate-200 rounded-sm p-8 lg:p-10 card-shadow">
-              <h2 className="font-heading text-2xl font-semibold text-slate-900 mb-8">Agent Registration Form</h2>
-              <AgentForm roles={["State Coordinator", "District Coordinator", "Field Agent", "Pincode Level Agent"]} />
+              <h2 className="font-heading text-2xl font-semibold text-slate-900 mb-2">Network Registration</h2>
+              <p className="text-slate-500 mb-8">Register for APAAR or PAN 2.0 across South India.</p>
+              <AgentForm
+                positions={["State Coordinator", "District Coordinator", "Field Agent", "Pincode-Level Agent"]}
+                stateOptions={["Tamil Nadu", "Kerala", "Karnataka", "Andhra Pradesh", "Telangana", "Puducherry"]}
+                coverage="South India"
+              />
             </div>
           </Reveal>
         </div>

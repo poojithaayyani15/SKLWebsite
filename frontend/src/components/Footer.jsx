@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import { MapPin, Phone, Mail, MessageCircle } from "lucide-react";
-import { COMPANY } from "@/data/content";
+import { useCompany } from "@/context/SiteContext";
 
 export default function Footer() {
+  const COMPANY = useCompany();
   return (
     <footer className="bg-slate-950 text-slate-300" data-testid="main-footer">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">

@@ -1,0 +1,42 @@
+{
+  "summary": "Iteration 3: Full backend + frontend validation of the new CMS + RBAC admin system. Rewrote backend_test.py to cover the namespaced /admin/leads/* routes, RBAC (super_admin, operations, content_manager), Users CRUD (create/update/duplicate/invalid-role/primary-admin-protection), Website Settings (admin update reflects in /public/settings), Careers Openings CRUD (status='closed' hides from /public/careers), Downloads CRUD, Projects CRUD (APAAR + PAN 2.0 seeded), Media Library (upload -> list -> serve via ?auth= -> soft delete), Activity Log (settings update logged with user email + IP), Overview counts. All 40 pytest tests pass (backend 100%). Frontend: verified navbar CTA reads 'Join Our Network' (Become an Agent removed from nav — still present as a hero button on the home page, see note), About page shows [data-testid=eas-partnership] with the South-India-Channel-Partner-of-EAS statement, PAN 2.0 form position dropdown = State Coordinator / District Coordinator / Pincode-Level Agent, PAN 2.0 state dropdown offers all 6 south states (no longer read-only Tamil Nadu) and cascades to districts (Kerala -> 14 districts). Admin login works, all 9 sidebar sections render with correct data-testids, [data-testid=settings-save] persists and shows 'Settings saved' toast, [data-testid=media-upload] present, activity log lists settings updates with IP.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/admin/careers/{id}/resume", "issue": "Resume download endpoint is still mounted at the old (non-namespaced) path /admin/careers/{id}/resume while all other lead routes moved under /admin/leads/*. Frontend consumers work today because the old path exists, but this is inconsistent with the rest of the leads namespace. Suggest exposing /admin/leads/careers/{id}/resume as an alias (or moving)."},
+      {"endpoint": "POST /api/careers", "issue": "email accepted as plain str (Form field), not EmailStr — carried over from iter1/iter2."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Home hero", "issues": ["Hero still shows a 'Become an Agent' CTA button while the navbar CTA is 'Join Our Network' — the two labels are inconsistent. If the branding change is intentional across the whole site, the hero button should also read 'Join Our Network' (or 'Join the Network'). Currently only the navbar was updated."]},
+      {"screen": "/projects/pan-2 (PAN 2.0 Promotional Video section)", "issues": ["Carried from iter2: the video placeholder is a plain black poster with a small caption; consider a 'Video coming soon' badge."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Rename the hero CTA on the Home page from 'Become an Agent' to 'Join Our Network' to match the navbar change (inconsistency reported by user).",
+    "Consider aliasing /api/admin/careers/{id}/resume under /api/admin/leads/careers/{id}/resume for consistency with the namespaced leads routes.",
+    "Use EmailStr in POST /api/careers Form (carried over)."
+  ],
+  "critical_code_review_comments": [
+    "server.py line ~460: download_resume is still at /admin/careers/{id}/resume, not /admin/leads/careers/{id}/resume — the review requested the leads move; either move it or add a documented alias.",
+    "log_activity uses request.headers['x-forwarded-for'] but the primary admin's activity rows show '34.7.135.173' for every row (ingress IP), which is correct but somewhat unhelpful for audit trails. Consider also logging the CF-Connecting-IP or True-Client-IP header if the ingress exposes it.",
+    "Public /public/projects returns docs where status != 'draft' but the DB seed uses status='published'; a project saved without status defaults to 'published' via .setdefault in create_project — behaviour is fine but worth an explicit enum."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "100% (40/40 pytest)", "frontend": "100% of Phase-3 flows tested"},
+  "seed_data_creation": "Created and cleaned up several TEST_ users (ops_*, cm_*, upd_*, dup_* @example.com) as part of RBAC tests — deleted in teardown. Created + deleted TEST_JOB_*, TEST_DL_*, TEST_PROJ_* rows and one General/test_*.txt media file (soft-deleted). Contact/agent/career TEST_* rows for admin flows were marked Rejected in previous iterations.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "test_credentials": "poojithaayyani1592@gmail.com / SklAdmin@2026 (super_admin, seeded on startup)",
+  "context_for_next_testing_agent": "backend_test.py now targets the new /api/admin/leads/{collection} routes and covers RBAC, Users CRUD, Settings, Openings, Downloads, Projects, Media, Activity + Overview. TestUsersAndRBAC has a class-level teardown that logs in and deletes every user it created — do not run tests concurrently against the same DB from two suites. The resume download endpoint is intentionally hit via the LEGACY path /admin/careers/{id}/resume (with a fallback in the test) because server.py never moved it to /admin/leads/. If/when the endpoint is moved, remove the fallback.",
+  "rca_of_the_issue": "N/A — no regressions found. The single 'Become an Agent' text still visible on the home hero is a content oversight (label was updated only in the navbar); the fix is a one-line change in the Home hero component."
+}

@@ -33,7 +33,7 @@ export default function Navbar() {
       }`}
       data-testid="main-navbar"
     >
-      <nav className="max-w-7xl mx-auto px-6 lg:px-8 h-20 flex items-center justify-between">
+      <nav className="max-w-7xl mx-auto px-6 lg:px-8 h-24 flex items-center justify-between gap-6">
         <Link to="/" data-testid="nav-logo-link">
           <Logo variant={scrolled ? "dark" : "dark"} />
         </Link>
@@ -57,8 +57,8 @@ export default function Navbar() {
 
         <div className="hidden lg:flex items-center gap-3">
           <Link to="/join" data-testid="nav-cta-agent">
-            <Button className="bg-royal hover:bg-royal-dark text-white rounded-sm px-5 h-10 transition-colors">
-              Become an Agent
+            <Button className="bg-royal hover:bg-royal-dark text-white rounded-sm px-6 h-11 text-[15px] transition-colors">
+              Join Our Network
             </Button>
           </Link>
         </div>
@@ -89,7 +89,7 @@ export default function Navbar() {
             </NavLink>
           ))}
           <Link to="/join">
-            <Button className="w-full mt-2 bg-royal text-white rounded-sm">Become an Agent</Button>
+            <Button className="w-full mt-2 bg-royal text-white rounded-sm">Join Our Network</Button>
           </Link>
         </div>
       )}

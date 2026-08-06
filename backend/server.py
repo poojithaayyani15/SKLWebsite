@@ -344,6 +344,35 @@ async def create_career(
     return {"id": str(res.inserted_id), "status": "success"}
 
 
+ROLE_PERMS = {
+    "super_admin": {"leads", "content", "projects", "careers", "downloads", "media", "users", "activity"},
+    "admin": {"leads", "content", "projects", "careers", "downloads", "media", "activity"},
+    "content_manager": {"content", "projects", "downloads", "media"},
+    "hr": {"leads", "careers"},
+    "operations": {"leads"},
+}
+ROLES = list(ROLE_PERMS.keys())
+
+
+def require(permission: str):
+    async def dep(user: dict = Depends(get_current_user)):
+        if permission not in ROLE_PERMS.get(user.get("role", ""), set()):
+            raise HTTPException(status_code=403, detail="You do not have permission for this action")
+        return user
+    return dep
+
+
+async def log_activity(user, action, detail="", request: Request = None):
+    ip = ""
+    if request is not None:
+        xff = request.headers.get("x-forwarded-for", "")
+        ip = xff.split(",")[0].strip() if xff else (request.client.host if request.client else "")
+    await db.activity_log.insert_one({
+        "user": (user or {}).get("email", "system"), "role": (user or {}).get("role", ""),
+        "action": action, "detail": detail, "ip": ip, "at": now_iso(),
+    })
+
+
 # ---------------------------------------------------------------- admin CRM
 COLLECTIONS = {"contacts": db.contacts, "agents": db.agents, "careers": db.careers}
 
@@ -358,9 +387,8 @@ async def admin_stats(user: dict = Depends(get_current_user)):
     return stats
 
 
-@api_router.get("/admin/{collection}")
-async def list_leads(collection: str, user: dict = Depends(get_current_user),
-                     search: str = Query(""), status: str = Query(""), sort: str = Query("newest")):
+@api_router.get("/admin/leads/{collection}")
+async def list_leads(collection: str, user: dict = Depends(require("leads")), search: str = Query(""), status: str = Query(""), sort: str = Query("newest")):
     if collection not in COLLECTIONS:
         raise HTTPException(status_code=404, detail="Unknown collection")
     q = {}
@@ -373,7 +401,7 @@ async def list_leads(collection: str, user: dict = Depends(get_current_user),
     return [clean(d) for d in docs]
 
 
-@api_router.patch("/admin/{collection}/{item_id}/status")
+@api_router.patch("/admin/leads/{collection}/{item_id}/status")
 async def update_status(collection: str, item_id: str, body: StatusUpdate, user: dict = Depends(get_current_user)):
     if collection not in COLLECTIONS:
         raise HTTPException(status_code=404, detail="Unknown collection")
@@ -383,7 +411,7 @@ async def update_status(collection: str, item_id: str, body: StatusUpdate, user:
     return {"status": "ok"}
 
 
-@api_router.post("/admin/{collection}/{item_id}/notes")
+@api_router.post("/admin/leads/{collection}/{item_id}/notes")
 async def add_note(collection: str, item_id: str, body: NoteUpdate, user: dict = Depends(get_current_user)):
     if collection not in COLLECTIONS:
         raise HTTPException(status_code=404, detail="Unknown collection")
@@ -392,7 +420,7 @@ async def add_note(collection: str, item_id: str, body: NoteUpdate, user: dict =
     return {"status": "ok", "note": note}
 
 
-@api_router.get("/admin/{collection}/export")
+@api_router.get("/admin/leads/{collection}/export")
 async def export_leads(collection: str, format: str = Query("csv"), user: dict = Depends(get_current_user)):
     if collection not in COLLECTIONS:
         raise HTTPException(status_code=404, detail="Unknown collection")
@@ -457,6 +485,299 @@ async def root():
     return {"message": "SKL Enterprises API", "status": "ok"}
 
 
+# ================================================================ CMS models
+
+
+class SettingsUpdate(BaseModel):
+    data: dict
+
+
+class OpeningModel(BaseModel):
+    title: str
+    type: str = "Full-time"
+    location: str = ""
+    desc: str = ""
+    status: str = "open"
+
+
+class DownloadModel(BaseModel):
+    label: str
+    type: str = "PDF"
+    url: str = ""
+    category: str = "General"
+
+
+class ProjectModel(BaseModel):
+    data: dict
+
+
+class UserCreate(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+    role: str
+
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    role: Optional[str] = None
+    password: Optional[str] = None
+
+
+# ---- PUBLIC (no auth) ----
+@api_router.get("/public/settings")
+async def public_settings():
+    doc = await db.settings.find_one({"key": "site"})
+    return (doc or {}).get("data", {})
+
+
+@api_router.get("/public/projects")
+async def public_projects():
+    docs = await db.projects.find({"status": {"$ne": "draft"}}).sort("order", 1).to_list(100)
+    return [clean(d) for d in docs]
+
+
+@api_router.get("/public/careers")
+async def public_careers():
+    docs = await db.job_openings.find({"status": "open"}).sort("created_at", -1).to_list(100)
+    return [clean(d) for d in docs]
+
+
+@api_router.get("/public/downloads")
+async def public_downloads():
+    docs = await db.downloads.find({}).sort("created_at", -1).to_list(200)
+    return [clean(d) for d in docs]
+
+
+# ---- SETTINGS ----
+@api_router.get("/admin/settings")
+async def get_settings(user: dict = Depends(require("content"))):
+    doc = await db.settings.find_one({"key": "site"})
+    return (doc or {}).get("data", {})
+
+
+@api_router.put("/admin/settings")
+async def update_settings(body: SettingsUpdate, request: Request, user: dict = Depends(require("content"))):
+    await db.settings.update_one({"key": "site"}, {"$set": {"data": body.data, "updated_at": now_iso()}}, upsert=True)
+    await log_activity(user, "Updated site settings", "", request)
+    return {"status": "ok"}
+
+
+# ---- PROJECTS CRUD ----
+@api_router.get("/admin/projects")
+async def list_projects(user: dict = Depends(require("projects"))):
+    docs = await db.projects.find({}).sort("order", 1).to_list(100)
+    return [clean(d) for d in docs]
+
+
+@api_router.post("/admin/projects")
+async def create_project(body: ProjectModel, request: Request, user: dict = Depends(require("projects"))):
+    data = body.data
+    data.setdefault("order", 99)
+    data.setdefault("status", "published")
+    res = await db.projects.insert_one(data)
+    await log_activity(user, "Created project", data.get("name", ""), request)
+    return {"id": str(res.inserted_id)}
+
+
+@api_router.put("/admin/projects/{pid}")
+async def update_project(pid: str, body: ProjectModel, request: Request, user: dict = Depends(require("projects"))):
+    body.data.pop("id", None)
+    await db.projects.update_one({"_id": ObjectId(pid)}, {"$set": body.data})
+    await log_activity(user, "Updated project", body.data.get("name", pid), request)
+    return {"status": "ok"}
+
+
+@api_router.delete("/admin/projects/{pid}")
+async def delete_project(pid: str, request: Request, user: dict = Depends(require("projects"))):
+    await db.projects.delete_one({"_id": ObjectId(pid)})
+    await log_activity(user, "Deleted project", pid, request)
+    return {"status": "ok"}
+
+
+# ---- CAREERS OPENINGS ----
+@api_router.get("/admin/openings")
+async def list_openings(user: dict = Depends(require("careers"))):
+    docs = await db.job_openings.find({}).sort("created_at", -1).to_list(100)
+    return [clean(d) for d in docs]
+
+
+@api_router.post("/admin/openings")
+async def create_opening(body: OpeningModel, request: Request, user: dict = Depends(require("careers"))):
+    doc = body.model_dump(); doc["created_at"] = now_iso()
+    res = await db.job_openings.insert_one(doc)
+    await log_activity(user, "Created job opening", body.title, request)
+    return {"id": str(res.inserted_id)}
+
+
+@api_router.put("/admin/openings/{oid}")
+async def update_opening(oid: str, body: OpeningModel, request: Request, user: dict = Depends(require("careers"))):
+    await db.job_openings.update_one({"_id": ObjectId(oid)}, {"$set": body.model_dump()})
+    await log_activity(user, "Updated job opening", body.title, request)
+    return {"status": "ok"}
+
+
+@api_router.delete("/admin/openings/{oid}")
+async def delete_opening(oid: str, request: Request, user: dict = Depends(require("careers"))):
+    await db.job_openings.delete_one({"_id": ObjectId(oid)})
+    await log_activity(user, "Deleted job opening", oid, request)
+    return {"status": "ok"}
+
+
+# ---- DOWNLOADS ----
+@api_router.get("/admin/downloads")
+async def list_downloads(user: dict = Depends(require("downloads"))):
+    docs = await db.downloads.find({}).sort("created_at", -1).to_list(200)
+    return [clean(d) for d in docs]
+
+
+@api_router.post("/admin/downloads")
+async def create_download(body: DownloadModel, request: Request, user: dict = Depends(require("downloads"))):
+    doc = body.model_dump(); doc["created_at"] = now_iso()
+    res = await db.downloads.insert_one(doc)
+    await log_activity(user, "Added download", body.label, request)
+    return {"id": str(res.inserted_id)}
+
+
+@api_router.delete("/admin/downloads/{did}")
+async def delete_download(did: str, request: Request, user: dict = Depends(require("downloads"))):
+    await db.downloads.delete_one({"_id": ObjectId(did)})
+    await log_activity(user, "Deleted download", did, request)
+    return {"status": "ok"}
+
+
+# ---- MEDIA LIBRARY ----
+@api_router.get("/admin/media")
+async def list_media(folder: str = Query(""), user: dict = Depends(require("media"))):
+    q = {"is_deleted": {"$ne": True}}
+    if folder and folder != "all":
+        q["folder"] = folder
+    docs = await db.media.find(q).sort("created_at", -1).to_list(1000)
+    return [clean(d) for d in docs]
+
+
+@api_router.post("/admin/media")
+async def upload_media(request: Request, folder: str = Form("General"), file: UploadFile = File(...), user: dict = Depends(require("media"))):
+    ext = file.filename.split(".")[-1].lower() if "." in file.filename else "bin"
+    data = await file.read()
+    if len(data) > 60 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File must be under 60MB")
+    path = f"{APP_NAME}/media/{folder}/{uuid.uuid4()}.{ext}"
+    result = put_object(path, data, file.content_type or "application/octet-stream")
+    doc = {
+        "storage_path": result["path"], "original_filename": file.filename, "folder": folder,
+        "content_type": file.content_type or "application/octet-stream", "size": result.get("size", len(data)),
+        "is_deleted": False, "created_at": now_iso(), "uploaded_by": user["email"],
+    }
+    res = await db.media.insert_one(doc)
+    await log_activity(user, "Uploaded media", f"{folder}/{file.filename}", request)
+    return {"id": str(res.inserted_id), "storage_path": result["path"]}
+
+
+@api_router.delete("/admin/media/{mid}")
+async def delete_media(mid: str, request: Request, user: dict = Depends(require("media"))):
+    await db.media.update_one({"_id": ObjectId(mid)}, {"$set": {"is_deleted": True}})
+    await log_activity(user, "Deleted media", mid, request)
+    return {"status": "ok"}
+
+
+@api_router.get("/admin/media/{mid}/file")
+async def media_file(mid: str, authorization: str = Header(None), auth: str = Query(None)):
+    token = authorization[7:] if authorization and authorization.startswith("Bearer ") else auth
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if not await db.users.find_one({"_id": ObjectId(payload["sub"])}):
+            raise HTTPException(status_code=401, detail="Invalid user")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    rec = await db.media.find_one({"_id": ObjectId(mid)})
+    if not rec:
+        raise HTTPException(status_code=404, detail="Not found")
+    data, ctype = get_object(rec["storage_path"])
+    return Response(content=data, media_type=rec.get("content_type", ctype))
+
+
+# ---- USERS (super_admin only) ----
+@api_router.get("/admin/users")
+async def list_users(user: dict = Depends(require("users"))):
+    docs = await db.users.find({}).sort("created_at", 1).to_list(200)
+    out = []
+    for d in docs:
+        out.append({"id": str(d["_id"]), "name": d.get("name"), "email": d.get("email"),
+                    "role": d.get("role"), "created_at": d.get("created_at")})
+    return out
+
+
+@api_router.post("/admin/users")
+async def create_user(body: UserCreate, request: Request, user: dict = Depends(require("users"))):
+    if body.role not in ROLES:
+        raise HTTPException(status_code=400, detail="Invalid role")
+    email = body.email.lower().strip()
+    if await db.users.find_one({"email": email}):
+        raise HTTPException(status_code=400, detail="A user with this email already exists")
+    await db.users.insert_one({"name": body.name, "email": email, "role": body.role,
+                               "password_hash": hash_password(body.password), "created_at": now_iso()})
+    await log_activity(user, "Created user", f"{email} ({body.role})", request)
+    return {"status": "ok"}
+
+
+@api_router.put("/admin/users/{uid}")
+async def update_user(uid: str, body: UserUpdate, request: Request, user: dict = Depends(require("users"))):
+    updates = {}
+    if body.name is not None:
+        updates["name"] = body.name
+    if body.role is not None:
+        if body.role not in ROLES:
+            raise HTTPException(status_code=400, detail="Invalid role")
+        updates["role"] = body.role
+    if body.password:
+        updates["password_hash"] = hash_password(body.password)
+    if updates:
+        await db.users.update_one({"_id": ObjectId(uid)}, {"$set": updates})
+    await log_activity(user, "Updated user", uid, request)
+    return {"status": "ok"}
+
+
+@api_router.delete("/admin/users/{uid}")
+async def delete_user(uid: str, request: Request, user: dict = Depends(require("users"))):
+    target = await db.users.find_one({"_id": ObjectId(uid)})
+    if target and target.get("email") == ADMIN_EMAIL:
+        raise HTTPException(status_code=400, detail="Cannot delete the primary administrator")
+    await db.users.delete_one({"_id": ObjectId(uid)})
+    await log_activity(user, "Deleted user", (target or {}).get("email", uid), request)
+    return {"status": "ok"}
+
+
+# ---- ACTIVITY LOG + OVERVIEW ----
+@api_router.get("/admin/activity")
+async def get_activity(user: dict = Depends(require("activity"))):
+    docs = await db.activity_log.find({}).sort("at", -1).to_list(200)
+    return [clean(d) for d in docs]
+
+
+@api_router.get("/admin/overview")
+async def overview(user: dict = Depends(get_current_user)):
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    async def today_count(col):
+        return await col.count_documents({"created_at": {"$regex": f"^{today}"}})
+    stats = {
+        "contacts": await db.contacts.count_documents({}),
+        "agents": await db.agents.count_documents({}),
+        "careers": await db.careers.count_documents({}),
+        "today": sum([await today_count(c) for c in COLLECTIONS.values()]),
+        "media": await db.media.count_documents({"is_deleted": {"$ne": True}}),
+        "projects": await db.projects.count_documents({}),
+        "openings": await db.job_openings.count_documents({"status": "open"}),
+        "users": await db.users.count_documents({}),
+    }
+    stats["total"] = stats["contacts"] + stats["agents"] + stats["careers"]
+    recent = await db.activity_log.find({}).sort("at", -1).to_list(8)
+    stats["recent_activity"] = [clean(r) for r in recent]
+    return stats
+
+
 app.include_router(api_router)
 
 app.add_middleware(
@@ -468,17 +789,65 @@ app.add_middleware(
 )
 
 
+async def seed_cms():
+    if await db.settings.find_one({"key": "site"}) is None:
+        await db.settings.update_one({"key": "site"}, {"$set": {"data": {
+            "company_name": "SKL Enterprises",
+            "positioning": "Technology-Driven Public Service Solutions",
+            "tagline": "Empowering Digital Citizen Services Across India",
+            "address": "No. 2, Shop No. 6, 2nd Street, Race View Colony, Guindy, Chennai – 600032, Tamil Nadu, India",
+            "phone": "+91 95516 11666",
+            "whatsapp": "+91 94984 00986",
+            "email": "sklenterprises@zohomail.in",
+            "hours": "Monday – Saturday: 9:30 AM – 6:30 PM · Sunday: Closed",
+            "partnership": "SKL Enterprises serves as the South India Channel Partner of EAS, supporting the implementation and expansion of digital public service initiatives across the region.",
+            "founder_name": "E.L. Ashok Anand",
+            "founder_title": "Founder & Managing Director",
+            "linkedin": "", "twitter": "", "facebook": "",
+            "seo_description": "SKL Enterprises — Technology-Driven Public Service Solutions. Empowering digital citizen services across India.",
+        }, "updated_at": now_iso()}}, upsert=True)
+    if await db.job_openings.count_documents({}) == 0:
+        for o in [
+            {"title": "State Project Coordinator", "type": "Full-time", "location": "Chennai", "desc": "Lead project delivery and coordinator networks across the state.", "status": "open"},
+            {"title": "District Operations Executive", "type": "Full-time", "location": "South India", "desc": "Manage district-level service delivery and agent onboarding.", "status": "open"},
+            {"title": "Field Service Agent", "type": "Field", "location": "South India", "desc": "Deliver citizen services and enrolment support at the last mile.", "status": "open"},
+            {"title": "Customer Support Associate", "type": "Full-time", "location": "Chennai", "desc": "Assist citizens navigating government programmes across channels.", "status": "open"},
+        ]:
+            o["created_at"] = now_iso()
+            await db.job_openings.insert_one(o)
+    if await db.projects.count_documents({}) == 0:
+        base = [
+            {"slug": "apaar", "name": "APAAR", "tagline": "One Nation, One Student ID — for a lifelong academic identity.",
+             "coverage": "South India", "hero": "/apaar.png", "order": 1, "status": "published",
+             "positions": ["State Coordinator", "District Coordinator", "Field Agent"]},
+            {"slug": "pan-2", "name": "PAN 2.0", "tagline": "A smarter, secure and QR-enabled Permanent Account Number for every citizen.",
+             "coverage": "South India", "hero": "/pan2.png", "order": 2, "status": "published",
+             "positions": ["State Coordinator", "District Coordinator", "Pincode-Level Agent"]},
+        ]
+        for p in base:
+            p["created_at"] = now_iso()
+            await db.projects.insert_one(p)
+
+
 @app.on_event("startup")
 async def startup():
     await db.users.create_index("email", unique=True)
     await db.login_attempts.create_index("identifier")
+    await db.activity_log.create_index("at")
     existing = await db.users.find_one({"email": ADMIN_EMAIL})
     if existing is None:
         await db.users.insert_one({"email": ADMIN_EMAIL, "password_hash": hash_password(ADMIN_PASSWORD),
-                                   "name": "SKL Admin", "role": "admin", "created_at": now_iso()})
+                                   "name": "SKL Admin", "role": "super_admin", "created_at": now_iso()})
         logger.info("Admin user seeded")
-    elif not verify_password(ADMIN_PASSWORD, existing["password_hash"]):
-        await db.users.update_one({"email": ADMIN_EMAIL}, {"$set": {"password_hash": hash_password(ADMIN_PASSWORD)}})
+    else:
+        upd = {}
+        if not verify_password(ADMIN_PASSWORD, existing["password_hash"]):
+            upd["password_hash"] = hash_password(ADMIN_PASSWORD)
+        if existing.get("role") != "super_admin":
+            upd["role"] = "super_admin"
+        if upd:
+            await db.users.update_one({"email": ADMIN_EMAIL}, {"$set": upd})
+    await seed_cms()
     try:
         init_storage()
         logger.info("Storage initialized")

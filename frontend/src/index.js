@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@/index.css";
 import App from "@/App";
 import { AuthProvider } from "@/context/AuthContext";
+import { SiteProvider } from "@/context/SiteContext";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, refetchOnWindowFocus: false } },
@@ -13,7 +14,9 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <App />
+      <SiteProvider>
+        <App />
+      </SiteProvider>
     </AuthProvider>
   </QueryClientProvider>,
 );

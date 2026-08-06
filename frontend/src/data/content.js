@@ -21,6 +21,7 @@ export const COMPANY = {
   email: "sklenterprises@zohomail.in",
   hours: "Monday – Saturday: 9:30 AM – 6:30 PM · Sunday: Closed",
   mapQuery: "Race View Colony, Guindy, Chennai, Tamil Nadu 600032",
+  partnership: "SKL Enterprises serves as the South India Channel Partner of EAS, supporting the implementation and expansion of digital public service initiatives across the region.",
 };
 
 export const IMAGES = {
@@ -144,11 +145,10 @@ export const PROJECTS = {
     name: "PAN 2.0",
     full: "PAN 2.0 — QR-Enabled Digital PAN",
     tagline: "A smarter, secure and QR-enabled Permanent Account Number for every citizen.",
-    coverage: "Tamil Nadu",
-    coverageStates: ["Tamil Nadu"],
-    fixedState: "Tamil Nadu",
-    positions: ["District Coordinator", "Pincode Level Agent"],
-    recruiting: ["District Coordinators", "Pincode Level Agents"],
+    coverage: "South India",
+    coverageStates: ["Tamil Nadu", "Kerala", "Karnataka", "Andhra Pradesh", "Telangana", "Puducherry"],
+    positions: ["State Coordinator", "District Coordinator", "Pincode-Level Agent"],
+    recruiting: ["State Coordinators", "District Coordinators", "Pincode-Level Agents"],
     hero: "/pan2.png",
     content: "/pan2.png",
     video: null,
@@ -158,7 +158,7 @@ export const PROJECTS = {
       { label: "PAN 2.0 Agent Brochure", type: "PDF" },
     ],
     overview:
-      "PAN 2.0 is the next-generation, technology-driven upgrade of the Permanent Account Number system, featuring a secure QR-enabled PAN and a unified digital experience. SKL Enterprises supports citizens with awareness, application facilitation and last-mile service delivery across Tamil Nadu.",
+      "PAN 2.0 is the next-generation, technology-driven upgrade of the Permanent Account Number system, featuring a secure QR-enabled PAN and a unified digital experience. SKL Enterprises supports citizens with awareness, application facilitation and last-mile service delivery across South India, with Tamil Nadu serving as an initial operational focus.",
     objectives: [
       "Deliver a secure, QR-enabled digital PAN experience.",
       "Unify PAN-related services on a single digital platform.",
@@ -200,7 +200,7 @@ export const PROJECTS = {
       { q: "What is PAN 2.0?", a: "PAN 2.0 is an upgraded, QR-enabled and fully digital version of the PAN system that unifies PAN services on a single secure platform." },
       { q: "Do I need a new PAN?", a: "Existing PAN holders can upgrade to the QR-enabled PAN; new applicants receive the PAN 2.0 format directly." },
       { q: "What documents are required?", a: "Standard identity, address and date-of-birth proofs along with a photograph, as prescribed by the authorities." },
-      { q: "How can I become a PAN 2.0 agent?", a: "Apply using the 'Become an Agent' form on this page. We recruit Pincode Level Agents across Tamil Nadu." },
+      { q: "How can I become a PAN 2.0 agent?", a: "Apply using the 'Join Our Network' form on this page. We recruit State Coordinators, District Coordinators and Pincode-Level Agents across South India." },
     ],
   },
 };

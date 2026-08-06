@@ -42,6 +42,10 @@ export default function About() {
               deliver public-service projects that create real impact — expanding access, reducing
               friction and contributing to India's digital progress.
             </p>
+            <div className="mt-8 border-l-4 border-gold bg-slate-50 rounded-sm p-6" data-testid="eas-partnership">
+              <div className="section-label mb-2">Strategic Partnership</div>
+              <p className="text-slate-700 leading-relaxed">{COMPANY.partnership}</p>
+            </div>
           </Reveal>
           <Reveal delay={0.15}>
             <img src={IMAGES.officeTeam} alt="SKL Enterprises team" className="w-full h-[440px] object-cover rounded-sm card-shadow" />
