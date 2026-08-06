@@ -33,7 +33,6 @@ export default function Footer() {
             <li><Link to="/projects/apaar" className="hover:text-gold transition-colors">APAAR</Link></li>
             <li><Link to="/projects/pan-2" className="hover:text-gold transition-colors">PAN 2.0</Link></li>
             <li><Link to="/contact" className="hover:text-gold transition-colors">Contact Us</Link></li>
-            <li><Link to="/admin/login" className="hover:text-gold transition-colors">Admin Login</Link></li>
           </ul>
         </div>
 
@@ -54,7 +53,7 @@ export default function Footer() {
           <div className="flex items-center gap-5">
             <Link to="/privacy" className="hover:text-gold transition-colors" data-testid="footer-privacy">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-gold transition-colors" data-testid="footer-terms">Terms &amp; Conditions</Link>
-            <span className="hidden sm:inline">Founder — E.L. Ashok Anand</span>
+            <Link to="/admin/login" className="hover:text-gold transition-colors" data-testid="footer-admin-login">Admin Login</Link>
           </div>
         </div>
       </div>

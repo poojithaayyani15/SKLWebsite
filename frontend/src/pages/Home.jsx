@@ -48,7 +48,7 @@ export default function Home() {
               </Link>
               <Link to="/join" data-testid="hero-agent-btn">
                 <Button className="bg-white hover:bg-slate-100 text-royal font-semibold h-13 px-7 py-6 rounded-sm text-base transition-colors w-full sm:w-auto">
-                  Join Our Network
+                  Apply Now
                 </Button>
               </Link>
               <Link to="/contact" data-testid="hero-contact-btn">
