@@ -382,6 +382,39 @@ function ActivityLog() {
   );
 }
 
+/* ---------------- GLOBAL SEARCH ---------------- */
+function GlobalSearch() {
+  const [q, setQ] = useState("");
+  const [res, setRes] = useState(null);
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    if (!q.trim()) { setRes(null); return; }
+    const t = setTimeout(async () => {
+      setLoading(true);
+      try { const { data } = await api.get("/admin/search", { params: { q } }); setRes(data); }
+      catch { /* ignore */ } finally { setLoading(false); }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [q]);
+  const groups = [["Pages", "pages"], ["Projects", "projects"], ["Careers", "careers"], ["Downloads", "downloads"], ["Media", "media"]];
+  return (
+    <div className="max-w-2xl">
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <Input autoFocus data-testid="global-search-input" placeholder="Search pages, projects, careers, media, downloads…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9 h-11 rounded-sm" />
+      </div>
+      {loading && <Loader2 className="h-5 w-5 animate-spin text-royal" />}
+      {res && groups.map(([label, key]) => res[key]?.length ? (
+        <div key={key} className="mb-5" data-testid={`search-group-${key}`}>
+          <div className="text-xs uppercase tracking-wider text-gold font-semibold mb-2">{label}</div>
+          <div className="bg-white border border-slate-200 rounded-sm divide-y">{res[key].map((item, i) => (<div key={i} className="px-4 py-3 text-sm text-slate-700">{item.name || item.title || item.label || item.original_filename || item}</div>))}</div>
+        </div>) : null)}
+      {res && groups.every(([, k]) => !res[k]?.length) && <p className="text-slate-400 text-sm" data-testid="search-empty">No results found.</p>}
+    </div>
+  );
+}
+
+
 /* ---------------- SETTINGS ---------------- */
 function SettingsEditor() {
   const [d, setD] = useState(null);

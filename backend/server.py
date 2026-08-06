@@ -806,29 +806,36 @@ app.add_middleware(
 
 
 async def seed_cms():
-    if await db.settings.find_one({"key": "site"}) is None:
-        await db.settings.update_one({"key": "site"}, {"$set": {"data": {
-            "company_name": "SKL Enterprises",
-            "positioning": "Technology-Driven Public Service Solutions",
-            "tagline": "Empowering Digital Citizen Services Across India",
-            "address": "No. 2, Shop No. 6, 2nd Street, Race View Colony, Guindy, Chennai – 600032, Tamil Nadu, India",
-            "phone": "+91 95516 11666",
-            "whatsapp": "+91 94984 00986",
-            "email": "sklenterprises@zohomail.in",
-            "hours": "Monday – Saturday: 9:30 AM – 6:30 PM · Sunday: Closed",
-            "partnership": "SKL Enterprises serves as the South India Channel Partner of EAS, supporting the implementation and expansion of digital public service initiatives across the region.",
-            "founder_name": "E.L. Ashok Anand",
-            "founder_title": "Founder & Managing Director",
-            "linkedin": "", "twitter": "", "facebook": "", "instagram": "", "youtube": "",
-            "hero_headline": "Technology-Driven Public Service Solutions",
-            "hero_subheadline": "Empowering Digital Citizen Services Across India through innovation, technology, operational excellence and trusted execution.",
-            "hero_image": "",
-            "company_description": "Technology-Driven Public Service Solutions. Empowering digital citizen services across India through trusted execution.",
-            "footer_note": "",
-            "maintenance_mode": False,
-            "maintenance_message": "Our website is undergoing scheduled maintenance. Please check back shortly.",
-            "seo_description": "SKL Enterprises — Technology-Driven Public Service Solutions. Empowering digital citizen services across India.",
-        }, "updated_at": now_iso()}}, upsert=True)
+    SETTINGS_DEFAULTS = {
+        "company_name": "SKL Enterprises",
+        "positioning": "Technology-Driven Public Service Solutions",
+        "tagline": "Empowering Digital Citizen Services Across India",
+        "address": "No. 2, Shop No. 6, 2nd Street, Race View Colony, Guindy, Chennai – 600032, Tamil Nadu, India",
+        "phone": "+91 95516 11666",
+        "whatsapp": "+91 94984 00986",
+        "email": "sklenterprises@zohomail.in",
+        "hours": "Monday – Saturday: 9:30 AM – 6:30 PM · Sunday: Closed",
+        "partnership": "SKL Enterprises serves as the South India Channel Partner of EAS, supporting the implementation and expansion of digital public service initiatives across the region.",
+        "founder_name": "E.L. Ashok Anand",
+        "founder_title": "Founder & Managing Director",
+        "linkedin": "", "twitter": "", "facebook": "", "instagram": "", "youtube": "",
+        "hero_headline": "Technology-Driven Public Service Solutions",
+        "hero_subheadline": "Empowering Digital Citizen Services Across India through innovation, technology, operational excellence and trusted execution.",
+        "hero_image": "",
+        "company_description": "Technology-Driven Public Service Solutions. Empowering digital citizen services across India through trusted execution.",
+        "footer_note": "",
+        "maintenance_mode": False,
+        "maintenance_message": "Our website is undergoing scheduled maintenance. Please check back shortly.",
+        "seo_description": "SKL Enterprises — Technology-Driven Public Service Solutions. Empowering digital citizen services across India.",
+    }
+    existing = await db.settings.find_one({"key": "site"})
+    if existing is None:
+        await db.settings.update_one({"key": "site"}, {"$set": {"data": SETTINGS_DEFAULTS, "updated_at": now_iso()}}, upsert=True)
+    else:
+        data = existing.get("data", {})
+        missing = {f"data.{k}": v for k, v in SETTINGS_DEFAULTS.items() if k not in data}
+        if missing:
+            await db.settings.update_one({"key": "site"}, {"$set": missing})
     if await db.job_openings.count_documents({}) == 0:
         for o in [
             {"title": "State Project Coordinator", "type": "Full-time", "location": "Chennai", "desc": "Lead project delivery and coordinator networks across the state.", "status": "open"},

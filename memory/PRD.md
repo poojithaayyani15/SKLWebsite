@@ -46,6 +46,23 @@ poojithaayyani1592@gmail.com / SklAdmin@2026 (see /app/memory/test_credentials.m
 - Admin Users + roles (Super Admin/Admin/Content Manager/HR/Operations), password reset, user management.
 - Activity Log (login/logout/submissions/status changes/content & media updates with date/time/user/IP).
 
+## Phase 4 — Production Readiness + CMS extensions (2026-06)
+- Header simplified: center nav = Home/About/Projects/Careers/Contact; right-side "Join Our Network" button retained (recruitment still via button, Careers, APAAR, PAN 2.0 pages).
+- Editable social icons (LinkedIn/Facebook/Instagram/YouTube/X) via Website Settings → shown in Footer, mobile menu, Contact.
+- Website Settings expanded: hero headline/subheadline/image, company description, footer note, social, founder, default SEO, + Maintenance Mode toggle & message. Startup migration $sets new keys onto existing settings doc.
+- Editable Home hero (headline/subheadline/image) via SiteContext.
+- Custom branded 404 page (catch-all route); Maintenance Mode gate on public routes (admin bypasses).
+- Media Library: search + Copy-URL (reuse across pages) added to existing folder/upload/delete.
+- Global admin search across pages/projects/careers/downloads/media (GET /api/admin/search).
+- Footer Privacy Policy + Terms links → /privacy & /terms legal pages. sitemap.xml + robots.txt present.
+- Tested: backend 49/50 pytest (the 1 was the settings-migration, now fixed) + frontend; GlobalSearch + settings migration bugs fixed and re-verified.
+
+## Phase 4 explicitly DEFERRED (need larger refactor)
+- Full visual page-builder to edit EVERY heading/paragraph/card/FAQ on Home/About/Projects/Careers/Contact (Settings currently covers hero, company, contact, founder, partnership, footer, SEO, social).
+- Fully DB-rendered rich Project DETAIL templates (objectives/benefits/process/FAQs/downloads/video per project). CMS manages project cards + can add projects; the 2 flagship detail layouts remain in code.
+- Draft/Publish, Version History, Backup/Restore (per instruction, not in this phase).
+- Automatic WebP conversion (lazy-loading present).
+
 ## Phase 3 — Branding + CMS/RBAC (2026-06)
 - Branding: reduced hero overlay (brighter images), larger circular logo + more header whitespace, sticky nav polish.
 - Content fixes: PAN 2.0 coverage = South India (positions State/District/Pincode-Level); "Become an Agent" -> "Join Our Network" across nav & hero & project CTAs; EAS Strategic Partnership statement on About.
