@@ -46,6 +46,20 @@ poojithaayyani1592@gmail.com / SklAdmin@2026 (see /app/memory/test_credentials.m
 - Admin Users + roles (Super Admin/Admin/Content Manager/HR/Operations), password reset, user management.
 - Activity Log (login/logout/submissions/status changes/content & media updates with date/time/user/IP).
 
+## Phase 3 — Branding + CMS/RBAC (2026-06)
+- Branding: reduced hero overlay (brighter images), larger circular logo + more header whitespace, sticky nav polish.
+- Content fixes: PAN 2.0 coverage = South India (positions State/District/Pincode-Level); "Become an Agent" -> "Join Our Network" across nav & hero & project CTAs; EAS Strategic Partnership statement on About.
+- CMS backend (RBAC, single-org): Website Settings, Projects CRUD, Careers openings CRUD, Downloads CRUD, Media Library (object storage, folders, soft-delete), Users+roles CRUD, Activity Log, Overview. Public endpoints: /api/public/{settings,projects,careers,downloads}. Namespaced leads routes /api/admin/leads/*.
+- Roles: super_admin, admin, content_manager, hr, operations (perms enforced server-side via require(); UI gated too).
+- Frontend wired to DB via SiteContext: Footer + Contact consume editable Settings; Careers page lists DB openings (static fallback). Admin dashboard rebuilt with 9 sections.
+- Tested 40/40 backend pytest + frontend 100% (RBAC denials verified: operations/content_manager get correct 403s; primary admin delete blocked).
+
+## Phase 3 deferred (future)
+- Full DB-driven public Projects detail rendering (rich content still in code for the 2 flagship projects; CMS manages project cards + can add new ones).
+- Editing every Home/About string via CMS (currently Settings covers company/contact/founder/partnership/SEO; other page copy remains in content.js).
+- CMS Draft/Publish + Version History + automated Backup/Restore.
+- WebP auto-conversion on media upload (lazy-loading is implemented).
+
 ## Original backlog (still open)
 - EmailStr validation on careers endpoint (P2).
 - Real statistics to replace placeholders (P1, awaiting data).

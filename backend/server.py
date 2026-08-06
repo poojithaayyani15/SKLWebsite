@@ -317,7 +317,7 @@ async def create_agent(body: AgentCreate):
 @api_router.post("/careers")
 async def create_career(
     name: str = Form(...),
-    email: str = Form(...),
+    email: EmailStr = Form(...),
     phone: str = Form(...),
     position: str = Form(...),
     experience: str = Form(""),
@@ -457,7 +457,7 @@ async def export_leads(collection: str, format: str = Query("csv"), user: dict =
                              headers={"Content-Disposition": f"attachment; filename={collection}_export.csv"})
 
 
-@api_router.get("/admin/careers/{item_id}/resume")
+@api_router.get("/admin/leads/careers/{item_id}/resume")
 async def download_resume(item_id: str, authorization: str = Header(None), auth: str = Query(None)):
     token = None
     if authorization and authorization.startswith("Bearer "):
